@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>CreateGroup</title>
+  </head>
+  <body>
+    <center>
+    <h4>Create Group:</h4>
+    <label for="name">Name:</label>
+    <input type="text" id="NewGroupName" name="name"/>
+    <button type="button" id="btn_submit" name="button">Submit</button>
+    </center>
+  </body>
+</html>
+<script src="../js/InstantMessage/CreateRoom.js" charset="utf-8"></script>
+<script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyDg7_zf2I5u-SEd0aC0LYeHeJ2reer3dRo",
+    authDomain: "onecommunity-a0d82.firebaseapp.com",
+    databaseURL: "https://onecommunity-a0d82.firebaseio.com",
+    projectId: "onecommunity-a0d82",
+    storageBucket: "onecommunity-a0d82.appspot.com",
+    messagingSenderId: "785419227077"
+  };
+  firebase.initializeApp(config);
+</script>

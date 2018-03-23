@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Register</title>
+    <link rel="stylesheet" href="./css/Login.css">
+  </head>
+
+  <body>
+    <div class="login-card">
+      <h1>Register</h1><br>
+      <form>
+        <input type="text" id="Email" name="user" placeholder="Email">
+        <input type="password" id="Password" name="pass" placeholder="Password">
+        <input type="password" id="sPassword" name="spass" placeholder="Repeat Password">
+
+        <!-- <input type="submit" id="Register" name="login" class="login login-submit" value="Register"> -->
+        <button type="button" name="Register" id="Register" class="login login-submit">Register</button>
+      </form>
+    </div>
+
+  </body>
+</html>
+
+<script src="js/Register.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyDg7_zf2I5u-SEd0aC0LYeHeJ2reer3dRo",
+    authDomain: "onecommunity-a0d82.firebaseapp.com",
+    databaseURL: "https://onecommunity-a0d82.firebaseio.com",
+    projectId: "onecommunity-a0d82",
+    storageBucket: "onecommunity-a0d82.appspot.com",
+    messagingSenderId: "785419227077"
+  };
+  firebase.initializeApp(config);
+</script>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Member Control</title>
+  </head>
+  <body>
+    <h1>Member Control</h1>
+    <hr/>
+      <fieldset id="Owner">
+        <legend>Owner</legend>
+      </fieldset>
+
+      <fieldset id="Organizer">
+        <legend>Organizer</legend>
+      </fieldset>
+
+      <fieldset id="Members">
+        <legend>Members</legend>
+      </fieldset>
+
+      <fieldset id="Awaiting">
+        <legend>Awaiting for approval</legend>
+      </fieldset>
+    <hr/>
+    <a href="Community.html">Back</a><br/><br/>
+    <p id="getName"></p>
+    <button type="button" id="btn_logout">Logout</button>
+  </body>
+</html>
+
+<script src="js/MemberControl.js" charset="utf-8"></script>
+<script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyDg7_zf2I5u-SEd0aC0LYeHeJ2reer3dRo",
+    authDomain: "onecommunity-a0d82.firebaseapp.com",
+    databaseURL: "https://onecommunity-a0d82.firebaseio.com",
+    projectId: "onecommunity-a0d82",
+    storageBucket: "onecommunity-a0d82.appspot.com",
+    messagingSenderId: "785419227077"
+  };
+  firebase.initializeApp(config);
+</script>
