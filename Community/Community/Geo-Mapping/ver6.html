@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <link rel="stylesheet" href="https://openlayers.org/en/v4.6.4/css/ol.css" type="text/css">
+ <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+ <style>
+
+ </style>
+ <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+ <script src="https://openlayers.org/en/v4.6.4/build/ol.js"></script>
+ <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+ <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+ <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+ <script type="text/javascript" src="../js/newmap.js"></script>
+<script>
+  // Initialize Firebase
+</script>
+
+ <script src="../js/jquery.bootpag.min.js"></script>
+    <script src="../js/newData.js"></script>
+    <script src="../js/newDiv.js"></script>
+    <script src="../js/newPopup.js"></script>
+    <script src="../js/jquery.bootpag.min.js"></script>
+    <script src="../js/newpag.js"></script>
+    <script src="../js/newFilter.js"></script>
+ <link rel="stylesheet" href="../css/map.css">
+  <script>
+   var jsonObj = { "data": [
+   {"start":"2017-12-29",
+   "end":"2017-12-29",
+   "address":"hkuaa test",
+   "name":"Paypal Function Testing 1",
+   "stat":"upcoming",
+   "imgsrc":"https://passber.hkuaa.hk/wp-content/uploads/2017/06/passber_event_KwS8OxMCO_cardImg_1512356484.jpg",
+   "content":"",
+   "deadline":"",
+   "longtitue":"114.172800",
+   "latitue":"22.296100",
+   "page":"about:blank",
+   "fee":[
+   {"Subscribing Member":"1"},
+   {"Oridinary Member":"Free"}
+   ]},
+   {"start":"2017-11-17",
+   "end":"2017-11-30",
+   "address":"23/F Euro Trade Centre 21-23 Des Voeux Road, Central",
+   "name":"PCPD Course: PRC Law on Personal Wealth Management and Inheritance",
+   "stat":"Pasted",
+   "imgsrc":"https://passber.hkuaa.hk/wp-content/uploads/2017/06/passber_event_v8nRCqs91_coverImg_https-2F2Fcdn.evbuc_.com2Fimages2F330206822F2164401894802F12Foriginal.jpg",
+   "content":"",
+   "deadline":"",
+   "longtitue":"114.157565",
+   "latitue":"22.283005",
+   "fee":[
+   {"Non-Member":"50"},
+   {"Sub-Participant":"50"},
+   {"Subscribing Member":"1"},
+   {"Oridinary Member":"Free"},
+   {"Associate Member":"50"},
+   {"Associate Life Member":"50"}
+   ]},
+   {"start":"28-01-2018",
+   "end":"28-01-2018",
+   "address":"Ko Shan Theatre, 77 Ko Shan Road, Hung Hom, Kowloon",
+   "name":"Cantonese Opera by Karen's Meadow Cantonese Opera Studio",
+   "stat":"current",
+   "imgsrc":"https://ticket.urbtix.hk/internet/p_image/cover/34730.jpg?t=1516688551535",
+   "content":"	Karen's Meadow Cantonese Opera Studio",
+   "deadline":"",
+   "longtitue":"114.185546",
+   "latitue":"22.313614",
+   "fee":[
+   {"Non-Member":"100"},
+   {"Oridinary Member":"70"}
+   ]
+   },
+   {"start":"28-01-2018",
+   "end":"28-01-2018",
+   "address":"SHA TIN TOWN HALL AUDITORIUM",
+   "name":"The SoundTrek: HKFO x Film Music",
+   "stat":"current",
+   "imgsrc":"https://ticket.urbtix.hk/internet/p_image/cover/34501.jpg?t=1515641222822",
+   "content":"	Western Orchestral Music",
+   "deadline":"",
+   "longtitue":"114.190055",
+   "latitue":"22.381220",
+   "fee":[
+   {"Non-Member":"100"},
+   {"Oridinary Member":"70"}
+   ]}
+   ]};
+   var mapZone = {
+    "districts":
+     [
+      {
+       "name": "Hong Kong Island",
+       "topLeft":{
+        "longtitude":114.109154,
+        "latitude":22.293861
+       },
+       "bottomRight":{
+        "longtitude":114.268456,
+        "latitude":22.192491
+       }
+      },
+      {
+       "name":"Islands",
+       "topLeft":{
+        "longtitude":113.836212,
+        "latitude":22.352616
+       },
+       "bottomRight":{
+        "longtitude":114.058685,
+        "latitude":22.193763
+       }
+      },
+      {
+       "name":"Kowloon",
+       "topLeft":{
+        "longtitude":114.129410,
+        "latitude":22.349123
+       },
+       "bottomRight":{
+        "longtitude":114.238586,
+        "latitude":22.293544
+       }
+      },
+      {
+       "name":"New Territories",
+       "topLeft":{
+        "longtitude":114.033966,
+        "latitude":22.506214
+       },
+       "bottomRight":{
+        "longtitude":114.373856,
+        "latitude":22.351346
+   }
+  }
+ ]
+};
+
+  </script>
+ </head>
+ <body>
+
+ <div id="geo-div-zone" class="geo-div">
+ <div id="filter-zone" class="selection">
+  <form id="filter_selection" method="post">
+   <button id="btn_showDate" type="button">SHOW</button><br/>
+   <button id="btn_hideDate" type="button">HIDE</button>
+   <div id="date_selection">
+   <label for="form_start">Date of Start: </label><input type="date" name="form_start" id="form_start" />
+   <label for="form_start">Date of End: </label><input type="date" name="form_end" id="form_end" />
+   </div>
+   Price Range:
+   <select name="form_fee" id="form_fee">
+    <option value="-1">---Any---</option>
+    <option value="0">Free</option>
+    <option value="50">&le;$50</option>
+    <option value="100">&le;$100</option>
+   </select>
+   <br/>
+   Area:
+   <select name="form_district" id="form_district">
+    <option value="-1">--- Any Area ---</option>
+   </select>
+  </form>
+
+  <button id="btn_search">SEARCH</button>
+ </div>
+  <div id="page-menu"></div>
+  <div id="geo-content"></div>
+ </div>
+ <div id="map" class="map"><div id="popup"></div></div>
+ <hr/>
+ <a href="../ABCClub.html">Back</a><br/>
+ <p id="getName"></p>
+ <button type="button" id="btn_logout">Logout</button>
+ </body>
+ <script type="text/javascript">
+  $.each(mapZone, function(key, val){
+   $.each(val, function(key2, val){
+    $('#form_district').append('<option value="'+key2+'">'+val.name+'</option>');
+   })
+  });
+  var geomap = new GEOMAP('map');
+  geomap.setIcon('new_pin.png');
+  geomap.initDiv(new GEODIV());
+  geomap.initLayer();
+  geomap.initMap();
+  geomap.setPopup('popup', new GEOPOPUP('new_pin.png'));
+  var geoList = [];
+  var sampleData = [];
+  for(var i=0; i<jsonObj.data.length; i++){
+   var data = new DataSet(jsonObj.data[i]);
+   sampleData.push(data);
+   var div = geomap.addFeature(data);
+   $('#geo-content').append(div);
+   geoList.push({div: div, data: data});
+  }
+  var dp = new GEOPAG({
+   paging: 5,
+   content: $('.geo-div.content'),
+   control: $('#page-menu')
+  });
+  dp.pag();
+  var filter = new GEOFILTER({
+   date: false,
+   district: true
+  });
+  $('#form_start').val(new Date().toJSON().slice(0,10));
+  $('#form_end').val(new Date().toJSON().slice(0,10));
+  var labelStart = $('#form_start').prev();
+  var labelEnd = $('#form_end').prev();
+  $('#btn_showDate').hide();
+  $('#btn_showDate').click(function(){
+   filter.gate.date = true;
+   $('#btn_hideDate').show();
+   $('#form_start').show();
+   labelStart.show();
+   $('#form_end').show();
+   labelEnd.show();
+   $(this).hide();
+  });
+  $('#btn_hideDate').click(function(){
+   filter.gate.date = false;
+   $('#btn_showDate').show();
+   $('#form_start').hide();
+   labelStart.hide();
+   $('#form_end').hide();
+   labelEnd.hide();
+   $(this).hide();
+  });
+  $('#btn_search').click(function(){
+   var zoneIndex = $('#form_district').val();
+   var zone;
+   if(zoneIndex != -1 ){
+    zone = {
+     topLeft: {
+      longtitude: mapZone.districts[zoneIndex].topLeft.longtitude,
+      latitude: mapZone.districts[zoneIndex].topLeft.latitude
+     },
+     bottomRight: {
+      longtitude: mapZone.districts[zoneIndex].bottomRight.longtitude,
+      latitude: mapZone.districts[zoneIndex].bottomRight.latitude
+     }
+    }
+   } else {
+    zone = null;
+   }
+   var selection = {
+    fee: $('#form_fee').val(),
+    start: $('#form_start').val(),
+    end: $('#form_start').val(),
+    zone: zone
+   };
+   for(var i=0; i< geoList.length; i++){
+    if(!filter.compare(selection, geoList[i].data)){
+     geoList[i].div.hide();
+     geomap.hideFeatureByIndex(i);
+     dp.pag();
+    } else {
+     geoList[i].div.show();
+     geomap.showFeatureByIndex(i);
+     dp.pag();
+    }
+   }
+  });
+  
+  function findData(div){
+   for(var i=0; i< geoList.length; i++){
+    if(div==geoList[i].div){ return geoList[i].data;}
+   }
+   return null;
+  }
+ </script>
+</html>
