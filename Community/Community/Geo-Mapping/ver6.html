@@ -12,19 +12,33 @@
  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
  <script type="text/javascript" src="../js/newmap.js"></script>
-<script>
-  // Initialize Firebase
-</script>
-
+ <!-- script for firebase -->
+ <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
+ <script type="text/javascipt">
+  var config = {
+    apiKey: "AIzaSyDg7_zf2I5u-SEd0aC0LYeHeJ2reer3dRo",
+    authDomain: "onecommunity-a0d82.firebaseapp.com",
+    databaseURL: "https://onecommunity-a0d82.firebaseio.com",
+    projectId: "onecommunity-a0d82",
+    storageBucket: "onecommunity-a0d82.appspot.com",
+    messagingSenderId: "785419227077"
+  };
+  firebase.initializeApp(config);
+ </script>
+ <!-- script for firebase -->
+ <!-- script for the geo map -->
  <script src="../js/jquery.bootpag.min.js"></script>
-    <script src="../js/newData.js"></script>
-    <script src="../js/newDiv.js"></script>
-    <script src="../js/newPopup.js"></script>
-    <script src="../js/jquery.bootpag.min.js"></script>
-    <script src="../js/newpag.js"></script>
-    <script src="../js/newFilter.js"></script>
+ <script src="../js/newData.js"></script>
+ <script src="../js/newDiv.js"></script>
+ <script src="../js/newPopup.js"></script>
+ <script src="../js/jquery.bootpag.min.js"></script>
+ <script src="../js/newpag.js"></script>
+ <script src="../js/newFilter.js"></script>
+ <script src="../js/MAPJSON.js"></script>
+ <!-- script for the geo map -->
  <link rel="stylesheet" href="../css/map.css">
   <script>
+  /*
    var jsonObj = { "data": [
    {"start":"2017-12-29",
    "end":"2017-12-29",
@@ -88,7 +102,7 @@
    {"Non-Member":"100"},
    {"Oridinary Member":"70"}
    ]}
-   ]};
+   ]};*/
    var mapZone = {
     "districts":
      [
@@ -177,6 +191,7 @@
  <p id="getName"></p>
  <button type="button" id="btn_logout">Logout</button>
  </body>
+ <script type="text/javascript" src="../js/Basic.js"></script>
  <script type="text/javascript">
   $.each(mapZone, function(key, val){
    $.each(val, function(key2, val){
@@ -191,13 +206,42 @@
   geomap.setPopup('popup', new GEOPOPUP('new_pin.png'));
   var geoList = [];
   var sampleData = [];
-  for(var i=0; i<jsonObj.data.length; i++){
+  /*for(var i=0; i<jsonObj.data.length; i++){
    var data = new DataSet(jsonObj.data[i]);
    sampleData.push(data);
    var div = geomap.addFeature(data);
    $('#geo-content').append(div);
    geoList.push({div: div, data: data});
-  }
+  }*/
+  getMAPJSON(function(childData){
+   var feeString = childData.val().Fee;
+    feeArray = feeString.split("Members: ");
+   var fees = [];
+   for(var i=1; i<feeArray.length; i++){
+    var fee = feeArray[i].split(" Fee: ");
+	   var obj = {};
+	   obj[fee[0]] = fee[1];
+    fees.push(obj);
+   }
+   var data = new DataSet({
+    "start":childData.val().DoS,
+    "end":childData.val().DoE,
+    "address":childData.val().Address,
+    "name":childData.val().Name,
+    "stat":"upcoming",
+    "imgsrc":childData.val().Logo,
+    "content":childData.val().Content,
+    "deadline":"",
+    "longtitue":childData.val().Long,
+    "latitue":childData.val().Lat,
+    "page":"about:blank",
+    "fee":fees
+   });
+   sampleData.push(data);
+   var div = geomap.addFeature(data);
+   $('#geo-content').append(div);
+   geoList.push({div: div, data: data});
+  });
   var dp = new GEOPAG({
    paging: 5,
    content: $('.geo-div.content'),
