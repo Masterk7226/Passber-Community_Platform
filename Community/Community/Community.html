@@ -9,6 +9,10 @@
       padding: 0;
       height: 100%;
     }
+
+    .showInfo {
+      border: groove;
+    }
     </style>
   </head>
 
@@ -24,11 +28,14 @@
     <div style="padding-top: 50px;">
     <fieldset>
       <legend>Member Of</legend>
+
+
       <a href="ABCClub.html"> ABC Club </a><br/><br/>
     </fieldset>
 
     <fieldset>
       <legend>Recommend Communtity</legend>
+      <div id="ListAllCommunity"></div>
     </fieldset>
     </div>
 
@@ -45,13 +52,14 @@
 </html>
 
 <script src="js/Basic.js"></script>
+<script src="js/Community.js"></script>
 
 <script type="text/javascript">
   BTN_CreateCommunity = document.getElementById("btn_CreateCommunity");
   BTN_CreateCommunity.addEventListener('click', NotFunction);
 
   function NotFunction() {
-    alert("Not Function");
+    document.location = "CreateCommunityForm/CreateCommunityForm.html";
   }
 </script>
 
