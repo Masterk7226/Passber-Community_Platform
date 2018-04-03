@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Create Community Form</title>
+</head>
+
+<body>
+  <h1>Create Community Form</h1>
+  <form class="" method="post">
+    <table>
+      <tr><td>
+      <label for="Name">Name:</label></td>
+      <td><input type="text" name="Name" id="Name" /><br/>
+    </td></tr>
+
+      <tr><td>
+      <label for="description">Description</label></td>
+      <td><textarea name="description" id="description" rows="8" cols="80"></textarea><br/>
+    </td></tr>
+
+      <tr><td>
+        <button type="button" id="btnsubmit" name="button">Submit</button></td>
+      <td><input type="reset" value="Reset" />
+    </td></tr>
+    </table>
+  </form>
+</body>
+</html>
+
+<script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyDg7_zf2I5u-SEd0aC0LYeHeJ2reer3dRo",
+    authDomain: "onecommunity-a0d82.firebaseapp.com",
+    databaseURL: "https://onecommunity-a0d82.firebaseio.com",
+    projectId: "onecommunity-a0d82",
+    storageBucket: "onecommunity-a0d82.appspot.com",
+    messagingSenderId: "785419227077"
+  };
+  firebase.initializeApp(config);
+</script>
+
+
+<script src="../js/Basic.js"></script>
+<script type="text/javascript">
+  var Name = document.getElementById("Name").value;
+  var Desc = document.getElementById("description").value;
+  var btnsubmit = document.getElementById("btnsubmit");
+  btnsubmit.addEventListener('click', InsertIntoDb);
+
+function InsertIntoDb() {
+  if (Name!=null || Name!="" || Desc!=null) {
+    var ref = firebase.database().ref("Platform");
+
+    var preString = {
+      "Info" : {
+        "Name" : document.getElementById("Name").value ,
+        "Desc" : document.getElementById("description").value
+      },
+      "Users" : {
+        "OwnerKey" : {
+          "Email" : firebase.auth().currentUser.email
+        }
+      }
+    }
+
+    ref.push(preString);
+    alert("Done");
+  }
+}
+</script>
