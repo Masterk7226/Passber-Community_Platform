@@ -1,0 +1,116 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+
+    <!--****** Plugin ******-->
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!-- Google Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+    <!-- Bootstrap & jQuery -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" async></script>
+
+    <!-- Open Sans -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+
+    <!-- PT Mono -->
+    <link href="https://fonts.googleapis.com/css?family=PT+Mono" rel="stylesheet">
+
+    <!-- Custom Lib -->
+    <script type="text/javascript" src="../js/custom-lib.js"></script>
+
+    <!-- Firebase -->
+    <script src="../js/form-firebase.js"></script>
+    <script src="../js/Basic.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.11.0/firebase.js"></script>
+    <script src="../js/form-set-firebase.js"></script>
+    <script src="../js/init-firebase.js"></script>
+
+    <link rel="stylesheet" href="../css/dynamic-form.css">
+
+</head>
+
+
+<body>
+
+    <div id="body-container">
+
+        <div id="dynamic-form">
+            <div id="dynamic-form-control-list">
+                <div class="dynamic-form-button form-activate-button">
+                    <span>Activate</span>
+                    <label class="switch">
+                        <input class="field-input" value="true" type="checkbox">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="dynamic-form-button form-preview-button">
+                    <i class="material-icons">view_carousel</i>
+                    <span>Preview</span>
+                </div>
+            </div>
+
+            <div id="available-item-list-container">
+                <div id="available-item-list">
+
+                </div>
+            </div>
+
+            <div id="form-container-list-wrapper">
+                <div id="form-container-list">
+                    <ul id="dynamic_form-tab-controls">
+                        <li>
+                            <button id="add-form-button">
+                                <i class="material-icons">group_add</i>
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div id="additional-info">
+                        <div class="last-modified">
+                            Last modified:
+                            <span class="modified-date"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="item-manage-control">
+
+            </div>
+
+            <div id="form-data-control-list">
+                <div class="dynamic-form-button back-button">
+                    <i class="material-icons">keyboard_backspace</i>
+                    <span>Back</span>
+                </div>
+
+                <div class="dynamic-form-button form-save-button">
+                    <i class="material-icons">save</i>
+                    <span>Save</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main JS -->
+    <script type="text/javascript" src="../js/dynamic_form.js" defer></script>
+
+</body>
+
+</html>

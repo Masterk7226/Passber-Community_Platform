@@ -1,0 +1,158 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+
+    <!--****** Plugin ******-->
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!-- Google Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <!-- Bootstrap & jQuery -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" async></script>
+
+    <!-- Open Sans -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+
+    <!-- PT Mono -->
+    <link href="https://fonts.googleapis.com/css?family=PT+Mono" rel="stylesheet">
+
+    <!-- JSPDF -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js" async></script>
+
+    <!-- Custom Lib -->
+    <script src="../js/custom-lib.js"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.11.0/firebase.js"></script>
+    <script src="../js/form-set-firebase.js"></script>
+    <script src="../js/init-firebase.js"></script>
+
+
+    <link rel="stylesheet" href="../css/dynamic-form.css">
+
+</head>
+
+<body>
+
+    <div id="body-container">
+
+        <div style="display:flex;height:100%;width:100%;align-items:center;justify-content:center">
+            <style>
+                td * {
+                    margin-bottom: 5px
+                }
+            </style>
+            <form action="select-template.html" style="background-color: rgba(255, 255, 255, 0.8);padding: 10px 20px;border-radius: 5px">
+                <fieldset>
+                    <legend>Create Event</legend>
+                    <table>
+                        <tbody>
+                            <!-- <tr>
+                                <td>
+                                    <label>Logo</label>
+                                </td>
+                                <td>
+                                    <input type="file" class="event-logo">
+                                </td>
+                            </tr> -->
+                            <tr>
+                                <td>
+                                    <label>Name</label>
+                                </td>
+                                <td>
+                                    <input type="text" class="event-name">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label>Start Time</label>
+                                </td>
+                                <td>
+                                    <input type="text" class="event-start-time">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label>End Time</label>
+                                </td>
+                                <td>
+                                    <input type="text" class="event-end-time">
+                                </td>
+                            </tr>
+                            <tr>
+                                <tr>
+                                    <td>
+                                        <label>Description</label>
+                                    </td>
+                                    <td>
+                                        <textarea class="event-description"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input type="button" class="input-field cancel-button" value="Cancel">
+                                    </td>
+                                    <td>
+                                        <input type="button" class="input-field next-button" value="Next" style="float:right">
+                                    </td>
+                                </tr>
+                        </tbody>
+                    </table>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main JS -->
+    <script type="text/javascript" src="../js/create-event.js" defer></script>
+
+</body>
+
+<script>
+    $(".event-start-time").datepicker();
+    $(".event-end-time").datepicker();
+    $(".next-button").on("click.next-page", function () {
+        var communityID = $.urlParam("communityID");
+        var ref = firebase.database().ref("Community/" + communityID+"/EventSet");
+        var name = $(".event-name").val();
+        var startTime = $(".event-start-time").val();
+        var endTime = $(".event-end-time").val();
+        var description = $(".event-description").val();
+        var event = {
+            name: name,
+            startTime: startTime,
+            endTime: endTime,
+            description: description
+        };
+
+        // var key = ref.push(community, function () {
+        //     var communityID = key;
+        //     var storageRef = firebase.storage().ref("Community Resources/"+communityID+"/images/logo.jpg");
+        //     var logo = $(".community-logo").prop("files")[0];
+
+        //     storageRef.put(logo).then(function(snap){
+        //         window.location.href = "manage-member-type.html?communityID=" + communityID;
+        //     });
+        // }).key;
+
+        ref.push(event, function () {
+            window.location.href = "manage-community.html?communityID=" + communityID;
+        });
+    });
+    $(".cancel-button").on("click.back-page", function () {
+        window.location.href = "manage-community.html?communityID=" + communityID;
+    });
+</script>
+
+</html>
