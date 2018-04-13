@@ -1,7 +1,7 @@
 function onAuthStateChanged() {
   // Check for the user does it login
 
-  firebase.auth().onAuthStateChanged(function(user) {
+  firebase.auth().onAuthStateChanged(function (user) {
     if (!user) {
       alert("Does Not Login, Redirect to login page");
       window.location = '/login';
@@ -14,14 +14,18 @@ function onAuthStateChanged() {
   // End of function onAuthStateChanged
 }
 
-BTN_logout = document.getElementById("btn_logout");
-BTN_logout.addEventListener('click',logout);
+try {
+  BTN_logout = document.getElementById("btn_logout");
+  BTN_logout.addEventListener('click', logout);
 
-function logout() {
-  firebase.auth().signOut();
-  alert("You have sign out.");
-}
+  function logout() {
+    firebase.auth().signOut();
+    alert("You have sign out.");
+  }
 
-window.onload = function() {
-  onAuthStateChanged();
+  window.onload = function () {
+    onAuthStateChanged();
+  }
+} catch (error) {
+
 }

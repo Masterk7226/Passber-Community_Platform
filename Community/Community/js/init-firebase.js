@@ -1,17 +1,10 @@
 // Initialize Firebase
 var config = {
-    apiKey: "AIzaSyBtoc_nzve5IxOQ0rVfHbGUQC6mxvsJT3g",
-    authDomain: "passber-community-platform.firebaseapp.com",
-    databaseURL: "https://passber-community-platform.firebaseio.com/",
-    projectId: "passber-community-platform",
-    storageBucket: "passber-community-platform.appspot.com",
-    messagingSenderId: "192299184519",
-    "headers": [ {
-        "source" : "**/*.@(jpg|jpeg|gif|png)",
-        "headers" : [ {
-          "key" : "Access-Control-Allow-Origin",
-          "value" : "*"
-        } ]
-      } ]
+  apiKey: "AIzaSyDg7_zf2I5u-SEd0aC0LYeHeJ2reer3dRo",
+  authDomain: "onecommunity-a0d82.firebaseapp.com",
+  databaseURL: "https://onecommunity-a0d82.firebaseio.com",
+  projectId: "onecommunity-a0d82",
+  storageBucket: "onecommunity-a0d82.appspot.com",
+  messagingSenderId: "785419227077"
 };
 firebase.initializeApp(config);
