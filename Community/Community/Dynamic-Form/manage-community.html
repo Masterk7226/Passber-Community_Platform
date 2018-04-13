@@ -1,0 +1,380 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+
+    <!--****** Plugin ******-->
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!-- Google Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <!-- Bootstrap & jQuery -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" async></script>
+
+    <!-- Open Sans -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+
+    <!-- PT Mono -->
+    <link href="https://fonts.googleapis.com/css?family=PT+Mono" rel="stylesheet">
+
+    <!-- JSPDF -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js" async></script>
+
+    <!-- Custom Lib -->
+    <script src="../js/custom-lib.js"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.11.0/firebase.js"></script>
+    <script src="../js/form-set-firebase.js"></script>
+    <script src="../js/init-firebase.js"></script>
+
+
+    <link rel="stylesheet" href="../css/dynamic-form.css">
+    <style>
+        #community-info-container {
+            background-color: #ffffff;
+            padding: 1% 1%;
+        }
+
+        #save-member-type {
+            float: right;
+        }
+
+        .member-type-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .form-selection {
+            margin-left: auto;
+        }
+
+        .remove-member-type {
+            opacity: 0.5;
+            margin-left: auto;
+            cursor: pointer;
+        }
+
+        .remove-member-type:hover {
+            opacity: 1;
+        }
+
+        .member-type-item .member-type-input {
+            width: 100%;
+            margin-right: 5px;
+        }
+
+        .event-name {
+            display: inline-flex;
+            margin-top: 5px;
+        }
+
+        .event-duration {
+            margin-top: 5px;
+        }
+
+        .manage-event,
+        #create-event {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            float: right;
+            margin-top: 5px;
+        }
+
+        .manage-event {
+            margin-top: 0;
+        }
+
+        #back-button {
+            margin-top: 5px;
+        }
+
+        .event-item {
+            background-color: rgb(213, 208, 208);
+            padding: 5px;
+            margin-bottom: 5px;
+        }
+
+        i {
+            font-size: inherit !important;
+        }
+
+        fieldset {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="body-container">
+        <div style="display:flex;min-height:100%;width:100%;align-items:center;justify-content:center">
+            <div id="community-info-container">
+                <fieldset>
+                    <legend>Community Info:</legend>
+                    <div class="community-name">Name:
+                        <span></span>
+                    </div>
+                    <div class="community-address">Address:
+                        <span></span>
+                    </div>
+                    <div class="community-phone">Phone:
+                        <span></span>
+                    </div>
+                    <div class="community-description">Description:
+                        <pre></pre>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Member Type:</legend>
+                    <div id="member-type-list">
+
+                    </div>
+                    <input type="button" id="enter-form-editor" value="Form Wditor">
+                    <input type="button" id="save-member-type" value="Save">
+                </fieldset>
+
+                <fieldset>
+                    <legend>Event List:</legend>
+                    <div id="event-list">
+
+                    </div>
+                    <input type="button" id="back-button" value="Back">
+                    <button id="create-event">
+                        <i class="material-icons">add</i>Add Event</button>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main JS -->
+    <script type="text/javascript" src="../js/create-event.js" defer></script>
+
+</body>
+
+<script>
+    var communityID = $.urlParam("communityID");
+    var communityRef = firebase.database().ref("Community/" + communityID);
+    var ref = communityRef.child("/MemberType");
+    var eventRef = communityRef.child("/EventSet");
+    var formRef = communityRef.child("/FormSet");
+    var loadMemberTypeList = function () {
+        communityRef.on("value", function (data) {
+            var community = data.val()
+
+            $(".community-name span").text(community.name);
+            $(".community-address span").text(community.address);
+            $(".community-phone span").text(community.phone);
+            $(".community-description pre").text(community.description);
+        });
+        communityRef.on("child_changed", function (data) {
+
+        });
+
+        function updateMemberTypeList(data) {
+            var memberTypeObjectSet = data.val();
+            var memberTypeList = $("#member-type-list");
+            var formSet = [];
+
+            memberTypeList.children().remove();
+            for (var key = [] in memberTypeObjectSet) {
+                var memberTypeObject = memberTypeObjectSet[key];
+                var memberType = $('<div class="member-type-item">').attr({
+                    "data-id": key
+                });
+                console.log(key)
+                var memberTypeName = $('<div class="member-type-name">').text(memberTypeObject.name);
+                var formSelection = $('<select class="form-selection">').append('<option value="-1">None</option>')
+                    .attr({
+                        "data-selected": memberTypeObject.selectedForm
+                    });
+                formSelection.on("change", function () {
+                    isChanged = $(this).hasClass("changed");
+
+                    if (!isChanged) {
+                        $(this).addClass("changed");
+                    }
+                });
+
+                memberType.append(memberTypeName).append(formSelection);
+                memberTypeList.append(memberType);
+            }
+
+            formRef.once("value", function (data) {
+                updateFormList(data)
+            });
+
+            var emptyMemberType = $('<div class="empty member-type-item">');
+            var memberTypeInput = $('<input type="text" class="member-type-input">');
+            var addMemberTypeButton = $('<button class="add-member-type">').append(
+                '<i class="material-icons">add</i>').prop("disabled", true);;
+            emptyMemberType.append(memberTypeInput).append(addMemberTypeButton);
+            memberTypeInput.on("input.input-member-type", {
+                memberTypeInput: memberTypeInput,
+                addMemberTypeButton: addMemberTypeButton
+            }, function (event) {
+                var memberTypeInput = event.data.memberTypeInput;
+                var addMemberTypeButton = event.data.addMemberTypeButton;
+                var isEmpty = memberTypeInput.val() != "";
+
+                addMemberTypeButton.prop("disabled", !isEmpty);
+            });
+            addMemberTypeButton.on("click.add-member-type", {
+                memberTypeList: memberTypeList,
+                memberTypeInput: memberTypeInput,
+                addMemberTypeButton: addMemberTypeButton
+            }, function (event) {
+                var memberTypeList = event.data.memberTypeList;
+                var memberTypeInput = event.data.memberTypeInput;
+                var addMemberTypeButton = event.data.addMemberTypeButton;
+                var memberTypeValue = memberTypeInput.val();
+                var memberType = $('<div class="draft member-type-item">');
+                var memberTypeName = $('<div class="member-type-name">').text(memberTypeValue);
+                var removeButton = $('<div class="remove-member-type">').append(
+                    '<i class="material-icons">clear</i>');
+
+                removeButton.on("click.remove-member-type", {
+                    memberType: memberType
+                }, function (event) {
+                    var memberType = event.data.memberType;
+
+                    memberType.remove();
+                });
+                addMemberTypeButton.prop("disabled", true);
+                memberTypeInput.val("");
+                memberType.append(memberTypeName).append(removeButton);
+                memberTypeList.prepend(memberType);
+            });
+            memberTypeList.append(emptyMemberType);
+        }
+        ref.orderByChild("name").on("value", function (data) {
+            updateMemberTypeList(data);
+        });
+        ref.on("child_changed", function () {
+
+        });
+        eventRef.orderByChild("name").on("value", function (data) {
+            var eventSet = data.val();
+
+            console.log(eventSet)
+            if (eventSet === null) {
+                return;
+            }
+
+            var eventList = $("#event-list");
+            for (var key = [] in eventSet) {
+                var eventObject = eventSet[key];
+                var event = $('<div class="event-item">').attr({
+                    "data-id": key
+                });
+                var eventName = $('<div class="event-name">').text(eventObject.name);
+                var manageButton = $('<button class="manage-event">Manage</button>').prepend(
+                    '<i class="material-icons">edit</i>');
+                manageButton.on("click.manage-event", {
+                    eventID: key
+                }, function (event) {
+                    var eventID = event.data.eventID;
+
+                    window.location.replace("manage-event.html?communityID=" + communityID +
+                        "&eventID=" + eventID);
+                });
+                var eventDuration = $('<div class="event-duration">').text(eventObject.startTime + " - " +
+                    eventObject.endTime);
+
+                event.append(eventName).append(manageButton).append(eventDuration);
+                eventList.append(event);
+            }
+        });
+        eventRef.on("child_changed", function () {
+
+        });
+
+        function updateFormList(data) {
+            formSet = data.val();
+            if (formSet === null) {
+                return;
+            }
+
+            var formSelections = $(".form-selection");
+            formSelections.find("option:not(:first)").remove();
+
+            for (var i = 0; i < formSet.length; i++) {
+                var form = formSet[i];
+                var isActivated = form.isActivated;
+
+                for (var fIndex = 0; fIndex < formSelections.length; fIndex++) {
+                    if (isActivated) {
+                        var formOption = $('<option>').text(form.memberType).attr({
+                            value: i
+                        });
+                        var formSelection = $(formSelections[fIndex]);
+                        var selectedIndex = formSelection.attr("data-selected");
+
+                        if (selectedIndex == i) {
+                            formOption.prop("selected", true);
+                        }
+
+                        formSelection.append(formOption);
+                    }
+                }
+            }
+        }
+        formRef.on("value", function (data) {
+            updateFormList(data)
+        });
+        formRef.on("child_changed", function () {
+
+        });
+    }
+    $("#enter-form-editor").on("click", function () {
+        window.open("form-list.html?communityID=" + communityID);
+    });
+    $("#save-member-type").on("click", function () {
+        var draftMemberType = $(".draft.member-type-item");
+
+        for (var i = 0; i < draftMemberType.length; i++) {
+            var name = $(draftMemberType[i]).find(".member-type-name").text();
+            var memberTypeObject = {
+                name: name,
+                selectedForm: -1
+            };
+
+            ref.push(memberTypeObject);
+        }
+
+        var changedFormSelection = $(".changed.form-selection");
+
+        for (var i = 0; i < changedFormSelection.length; i++) {
+            var memberType = $(changedFormSelection[i]).closest(".member-type-item");
+            var memberTypeId = memberType.attr("data-id");
+            var formId = $(changedFormSelection[i]).find("option:selected").val();
+
+            ref.child(memberTypeId).child("selectedForm").set(formId);
+        }
+
+        $("#finish-process").removeClass("disabled");
+    });
+    $("#back-button").on("click.back-to-privious-page", function () {
+        window.location.href = "my-community-list.html";
+    });
+    $("#create-event").on("click.create-event", function () {
+        window.location.href = "create-event.html?communityID=" + communityID;
+    });
+    loadMemberTypeList();
+</script>
+
+</html>

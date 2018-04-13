@@ -26,17 +26,17 @@
     <link href="https://fonts.googleapis.com/css?family=PT+Mono" rel="stylesheet">
 
     <!-- Custom Lib -->
-    <script src="../js/custom-lib.js"></script>
+    <script type="text/javascript" src="../js/custom-lib.js"></script>
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-storage.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.11.0/firebase.js"></script>
     <script src="../js/form-set-firebase.js"></script>
     <script src="../js/init-firebase.js"></script>
 
-    <link rel="stylesheet" href="../css/form-display.css">
+
+    <link rel="stylesheet" href="../css/form-list.css">
 
 </head>
 
@@ -44,16 +44,18 @@
 <body>
 
     <div id="body-container">
-        <div id="form-display">
-            <div class="form-container">
+        <div id="form-list-container">
+            <div id="form-list">
 
+                <div class="form-item" id="add-form">
+                    <label>Empty Form</label>
+                </div>
             </div>
-            <br>
         </div>
     </div>
 
     <!-- Main JS -->
-    <script type="text/javascript" src="../js/form-display.js" defer></script>
+    <script type="text/javascript" src="../js/event-form-list.js" defer></script>
 
 </body>
 

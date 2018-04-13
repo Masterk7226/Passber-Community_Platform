@@ -1,6 +1,5 @@
 /* Custom Styles */
 
-
 /* The switch - the box around the slider */
 
 .switch {
@@ -10,13 +9,11 @@
     height: 34px;
 }
 
-
 /* Hide default HTML checkbox */
 
 .switch input {
     display: none;
 }
-
 
 /* The slider */
 
@@ -58,7 +55,6 @@ input:checked+.slider:before {
     transform: translateX(26px);
 }
 
-
 /* Rounded sliders */
 
 .slider.round {
@@ -69,13 +65,11 @@ input:checked+.slider:before {
     border-radius: 50%;
 }
 
-.label{
+.label {
     font-size: 100%;
 }
 
-
 /* End of Custom Styles */
-
 
 /* Dynamic Form */
 
@@ -95,7 +89,7 @@ body {
     font-weight: 600;
 }
 
-pre{
+pre {
     font-family: 'Open Sans', sans-serif;
 }
 
@@ -107,6 +101,10 @@ pre{
     --center-list-width: 50%;
 }
 
+.ui-widget {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+}
 
 /* Control List */
 
@@ -115,7 +113,12 @@ pre{
     margin: 2.5% auto 0% auto;
 }
 
-#dynamic-form-control-list .dynamic-form-button {
+#form-data-control-list {
+    width: var(--center-list-width);
+    margin: 0% auto 2.5% auto;
+}
+
+.dynamic-form-button {
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -130,17 +133,39 @@ pre{
     border-radius: 2px;
 }
 
-#dynamic-form-control-list .dynamic-form-button:hover {
+.dynamic-form-button:hover {
     background-color: #d0d0d0;
     cursor: pointer;
     user-select: none;
 }
 
-#dynamic-form-control-list .dynamic-form-button:active {
+.dynamic-form-button:active {
     background-color: #c4c4c4;
 }
 
-#dynamic-form-control-list .form-preview-button {
+.form-activate-button {
+    background-color: transparent;
+}
+
+.form-activate-button:hover {
+    background-color: transparent;
+}
+
+.form-activate-button:active{
+    background-color: transparent;
+}
+
+.form-activate-button > span {
+    margin-right: 10px;
+}
+
+.form-activate-button,
+.back-button {
+    float: left;
+}
+
+.form-preview-button,
+.form-save-button {
     float: right;
 }
 
@@ -153,7 +178,6 @@ pre{
 .ui-dialog-titlebar-close i {
     font-size: 14px;
 }
-
 
 /* Form Preview */
 
@@ -170,7 +194,6 @@ pre{
     --display-input-padding-height: 6px;
     --display-input-padding-width: 12px;
 }
-
 
 /* Form Display */
 
@@ -189,8 +212,14 @@ pre{
     margin: auto;
 }
 
+.custom-form-container .display-field[data-type="member_type"] {
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+}
+
 .custom-form-container pre {
-    width:fit-content;
+    width: fit-content;
     margin-bottom: 0;
     padding: 0;
 }
@@ -206,6 +235,12 @@ pre{
     justify-content: flex-end;
     text-align: right;
     width: 150px;
+}
+
+.custom-form-container .display-field-label[data-isRequired="true"]::after {
+    margin-left: 5px;
+    color: #FF0000;
+    content: "*";
 }
 
 .custom-form-container .display-field-label.block {
@@ -232,12 +267,14 @@ pre{
 
 .custom-form-container .input-option {
     display: flex;
+    align-items: center;
 }
 
 .custom-form-container .input-option input {
     display: block;
     height: var(--display-input-font-size);
     width: var(--display-input-font-size);
+    margin-top: 0;
 }
 
 .custom-form-container .input-option .option-label {
@@ -248,7 +285,6 @@ pre{
     background-color: transparent;
     border: none;
 }
-
 
 /* Available Item List */
 
@@ -314,6 +350,7 @@ pre{
 #available-item-list-container .form-label {
     display: inline;
     margin-left: 15px;
+    margin-bottom: 0;
     line-height: 28px;
     text-overflow: ellipsis;
 }
@@ -322,14 +359,13 @@ pre{
     display: none;
 }
 
-
 /* Form Container */
 
 #form-container-list {
     width: var(--center-list-width);
     background-color: #FFFFFF;
     padding: 1.25%;
-    margin: 2.5% auto 10% auto;
+    margin: 2.5% auto 2.5% auto;
     border-radius: 2.5px;
 }
 
@@ -358,22 +394,56 @@ pre{
     border-radius: 2.5px;
 }
 
+.form-container .field-item-container {
+    --border-radius: 5px;
+    margin-bottom: 5px;
+    will-change: top, left;
+}
+
 .form-container .field-item {
     display: flex;
     height: 50px;
     align-items: center;
     background-color: #FFFFFF;
-    margin-bottom: 5px;
     cursor: pointer;
     color: #888888;
     padding-left: 25px;
     padding-right: 25px;
     border-style: solid;
     border-width: 1px;
-    border-radius: 5px;
+    border-radius: var(--border-radius);
     border-color: #cccccc;
-    will-change: top, left;
     user-select: none;
+}
+
+.field-item-container .sub-set {
+    display: none;
+}
+
+.field-item-container .sub-set.enabled {
+    display: block;
+}
+
+.field-item-container .sub-item {
+    display: flex;
+    height: 50px;
+    width: 90%;
+    margin-left: 10%;
+    align-items: center;
+    background-color: rgb(211, 211, 211);
+    cursor: pointer;
+    color: #888888;
+    padding-left: 25px;
+    padding-right: 25px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #cccccc;
+    user-select: none;
+}
+
+.field-item-container .sub-item:nth-last-child(1) {
+    border-bottom-left-radius: var(--border-radius);
+    ;
 }
 
 .form-container .field-item.active {
@@ -440,6 +510,12 @@ pre{
     background-color: #1ea9ea;
 }
 
+/* Panel Content */
+
+.field-option-list .option-item {
+    display: flex;
+    align-items: center;
+}
 
 /* Item Manage Control */
 
@@ -543,7 +619,6 @@ pre{
 
 #item-manage-control .field-control-set>input[type="checkbox"] {
     display: none;
-    f
 }
 
 #item-manage-control .field-control-set>input[type="checkbox"]:checked~.field-control-set-content {
@@ -551,4 +626,9 @@ pre{
     height: fit-content;
     padding: 15px 15px;
     border: 1px solid rgb(192, 192, 192);
+}
+
+/* Additional Information */
+#additional-info {
+    color: #7e7e7e;
 }

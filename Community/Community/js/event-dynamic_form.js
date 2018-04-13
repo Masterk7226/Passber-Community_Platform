@@ -4,7 +4,7 @@
 var DynamicForm = function () {
     this.backupList = {};
     try {
-        this.backupList = JSON.parse(localStorage["community-form-backup"]);
+        this.backupList = JSON.parse(localStorage["event-form-backup"]);
     } catch (error) {
 
     }
@@ -152,7 +152,7 @@ var DynamicForm = function () {
             DynamicForm.backupList[communityID] = {};
         }
         DynamicForm.backupList[communityID][formID] = jsonObject;
-        localStorage["community-form-backup"] = JSON.stringify(DynamicForm.backupList);
+        localStorage["event-form-backup"] = JSON.stringify(DynamicForm.backupList);
     }
     FormSaveController.prototype.enableSaveWarning = function () {
         if (!this.enabledWarning) {
@@ -262,7 +262,7 @@ var DynamicForm = function () {
         this.itemSet = [];
         this.itemList = $("#available-item-list");
         $(".back-button").on("click.back-to-list", function () {
-            window.location.href = "form-list.html?communityID=" + communityID;
+            window.location.href = "event-form-list.html?communityID=" + communityID;
         });
 
         this.addItem = function (item, category) {
@@ -1698,7 +1698,7 @@ DynamicForm.availableItemSet.enableItemList();
 
 var communityID = $.urlParam("communityID");
 var formID = $.urlParam("form-id");
-var ref = firebase.database().ref("Community/" + communityID + "/FormSet");
+var ref = firebase.database().ref("Community/" + communityID + "/Event/FormSet");
 var formDataObject = {};
 var forms = [];
 

@@ -37,6 +37,7 @@ var DynamicForm = function () {
     }
 
     // Form Display Controller
+    // controller that displays the form
     var FormDisplayController = function () {
         this.formDataObject = {};
         this.fieldTypes = {};
@@ -45,7 +46,7 @@ var DynamicForm = function () {
             text_label: "Label",
             text_box: "TextField",
             number_field: "NumberField",
-            text_area: "TextField",
+            text_area: "TextAreaField",
             radio_button_group: "RadioButtonGroup",
             checkbox_group: "CheckboxGroup",
             drop_down_list: "DropDownList",
@@ -58,30 +59,40 @@ var DynamicForm = function () {
             phone_number: "PhoneNumber"
         }
     }
+    // display the form by the formDataObject
     FormDisplayController.prototype.loadFormFromDataObject = function () {
-        this.displayForm.empty()
+        // clear all UI elements inside the form-container element
+        this.displayForm.empty();
 
-        for (var i = 0; i < this.formDataObject.formSet.length; i++) {
-            var formJSONObject = this.formDataObject.formSet[i];
-            var memberType = formJSONObject.memberType;
-            var form = new DynamicForm.Form(memberType);
-            var formDOM = form.toDisplayDOM();
+        var formJSONObject = this.formDataObject;
+        var memberType = formJSONObject.memberType;
+        var form = new DynamicForm.Form(memberType); // create a new form by the member type
+        var formDOM = form.toDisplayDOM(); // store a form UI elements to formDOM by the created form objecct
 
-            this.displayForm.append(formDOM);
-            form.setDOM(formDOM)
+        this.displayForm.append(formDOM); // Display the form UI object on screen
+        form.setDOM(formDOM) // blind the form UI element to the form object
 
-            for (var fieldIndex = 0; fieldIndex < formJSONObject.fieldSet.length; fieldIndex++) {
-                var fieldJSONObject = formJSONObject.fieldSet[fieldIndex];
-                var fieldType = fieldJSONObject.type;
-                var fieldData = fieldJSONObject.data;
-                var fieldLabel = fieldData.label;
-                var field = new DynamicForm[this.fieldTypes[fieldType]](fieldLabel, fieldData);
-                var fieldDOM = field.toDisplayDOM().appendTo(form.dom);
+        // loop through the json object that stores the fields of the form
+        for (var fieldIndex = 0; fieldIndex < formJSONObject.fieldSet.length; fieldIndex++) {
+            var fieldJSONObject = formJSONObject.fieldSet[fieldIndex];
+            var fieldType = fieldJSONObject.type;
+            var fieldData = fieldJSONObject.data;
+            var fieldLabel = fieldData.label;
+            var field = new DynamicForm[this.fieldTypes[fieldType]](fieldLabel, fieldData); // Create a field object by the field attributes and its label
+            var fieldDOM = field.toDisplayDOM().appendTo(form.dom); // store a form UI element to fieldDOM by the created field object
 
-                field.setDOM(fieldDOM);
-                form.addField(field);
-            }
+            field.setDisplayDOM(fieldDOM); // set the field UI element for the field object
+            field.setDOM(fieldDOM); // build the field UI element to the field object
+            form.addField(field); // add the field object to the created form
         }
+        DynamicForm.formSet.addForm(form); // add the created form to the global form set
+
+        // Display the form submission and back button under the form
+        var controlList = $('<tr class="control-list display-field">');
+        var backButton = $('<td>').append('<button id="back-button">Back</button>');
+        var submitForm = $('<td>').append('<button id="submit-form">Submit</button>');
+        controlList.append(backButton).append(submitForm);
+        formDOM.append(controlList);
     }
     FormDisplayController.prototype.setFormDataObject = function (formDataObject) {
         this.formDataObject = formDataObject;
@@ -314,6 +325,8 @@ var DynamicForm = function () {
             this.dom = $('<div class="preview-form-container">').dialog({
                 width: "fit-content",
                 autoOpen: false,
+                resizable: false,
+                appendTo: "#body-container",
                 create: function (event, ui) {
                     var id = $(this).attr("id");
                     var container = $(this).closest('*[aria-describedby="' + id + '"]');
@@ -455,7 +468,22 @@ var DynamicForm = function () {
         var dom = $('<div class="field-control ' + name + '">');
         dom.append('<label class="field-text">' + label + '</label>');
         var switchField = $('<label class="switch">');
-        switchField.append('<input class="field-input" value="true" type="checkbox" ' + ((isChecked == true) ? "checked" : "") + '>');
+        var switchButton = $('<input class="field-input switch" type="checkbox">').prop({
+            checked: isChecked
+        }).val(isChecked);
+        switchField.on("change.change-switch-status", {
+            switchButton: switchButton
+        }, function (event) {
+            var switchButton = event.data.switchButton;
+            var isChecked = switchButton.prop("checked");
+
+            if (isChecked) {
+                switchButton.val(true);
+            } else {
+                switchButton.val(false);
+            }
+        });
+        switchField.append(switchButton);
         switchField.append('<span class="slider round"></span>');
         dom.append(switchField);
 
@@ -605,13 +633,31 @@ var DynamicForm = function () {
     this.Form.prototype.setDOM = function (dom) {
         this.dom = dom;
     }
+    this.Form.prototype.setDisplayDOM = function (displayDOM) {
+        this.displayDOM = displayDOM;
+    }
+    this.Form.prototype.getFormValues = function () {
+        var valueObject = [];
+
+        for (var i = 0; i < this.fieldSet.length; i++) {
+            var field = this.fieldSet[i];
+
+            valueObject[i] = field.getFieldValue();
+        }
+
+        return valueObject;
+    }
     this.Form.prototype.toDisplayDOM = function () {
         var dom = $('<div class="custom-form-container">');
-        var fields = $(this.dom).find(".field-item");
+        var fields = $(this.dom).find(".field-item-container");
 
         for (var i = 0; i < this.fieldSet.length; i++) {
             dom.append(this.fieldSet[i].toDisplayDOM());
         }
+
+        var headline = $('<tr class="display-field display-field-combined" data-type="member_type" colspan="2">');
+        headline.text(this.memberType);
+        dom.prepend(headline);
 
         return dom;
     }
@@ -649,16 +695,21 @@ var DynamicForm = function () {
     this.Field.prototype.setForm = function (form) {
         this.form = form;
     }
+    this.Field.prototype.setDisplayDOM = function (displayDOM) {
+        this.displayDOM = displayDOM;
+    }
     this.Field.prototype.setType = function (type) {
         this.type = type;
     }
     this.Field.prototype.toFieldDOM = function () {
-        var dom = $('<div class="field-item ' + this.type + '" data-type="' + this.typeLabel + '">');
-        dom.append('<i class="form-logo material-icons">' + this.icon + '</i>');
-        dom.append('<label class="form-label">' + this.data.label + '</label>');
-        dom.append('<i class="form-required" data-required="' + this.data.isRequired + '">*</i>');
-        dom.append('<i class="form-edit-control material-icons delete">delete</i>');
-        dom.append('<i class="form-edit-control material-icons edit">edit</i>');
+        var dom = $('<div class="field-item-container">');
+        var fieldItem = $('<div class="field-item ' + this.type + '" data-type="' + this.typeLabel + '">');
+        fieldItem.append('<i class="form-logo material-icons">' + this.icon + '</i>');
+        fieldItem.append('<label class="form-label">' + this.data.label + '</label>');
+        fieldItem.append('<i class="form-required" data-required="' + this.data.isRequired + '">*</i>');
+        fieldItem.append('<i class="form-edit-control material-icons delete">delete</i>');
+        fieldItem.append('<i class="form-edit-control material-icons edit">edit</i>');
+        dom.append(fieldItem);
 
         return dom;
     }
@@ -684,10 +735,16 @@ var DynamicForm = function () {
 
             for (var i = 0; i < allInputs.length; i++) {
                 var name = allInputs[i].closest(".field-control").classList[1];
+                var switches = $(allInputs[i]).filter('.switch[type="checkbox"]')
                 var checkbox = $(allInputs[i]).filter('[type="checkbox"]');
                 var selecteList = $(allInputs[i]).filter('[type="checkbox"]');
 
-                if (checkbox.length >= 1) {
+
+                if (switches.length >= 1) {
+                    var isChecked = ((switches.val() == "false")?false:true);
+                    data[name] = isChecked;
+                    continue;
+                } else if (checkbox.length >= 1) {
                     data[name] = checkbox.filter(":checked").val();
                     continue;
                 }
@@ -705,6 +762,17 @@ var DynamicForm = function () {
         dom.append(this.createHeader(this.typeLabel));
 
         return dom;
+    }
+    this.Field.prototype.doValidate = function (value) {
+        return true;
+    }
+    this.Field.prototype.getFieldValue = function () {
+        var value = this.displayDOM.find("input, select, textarea").val();
+        if (this.doValidate(value)) {
+            return value;
+        } else {
+            throw "error";
+        }
     }
     this.Field.prototype.getFieldSize = function (length) {
         length = parseInt(length);
@@ -733,7 +801,7 @@ var DynamicForm = function () {
         Object.getPrototypeOf(DynamicForm.Field.prototype).doSave.call(this);
         this.dom.find(".form-label").text(this.data.label);
         this.dom.find(".form-required").attr({
-            "data-required": ((this.data.isRequired === undefined) ? false : true)
+            "data-required": this.data.isRequired
         });
     }
     this.Field.prototype.setDOM = function (dom) {
@@ -806,7 +874,9 @@ var DynamicForm = function () {
     }
     this.TextField.prototype.toDisplayDOM = function () {
         var field = Object.getPrototypeOf(DynamicForm.TextField.prototype).toDisplayDOM.call(this);
-        var label = $('<td class="display-field-label">' + this.data.label + '</td>');
+        var label = $('<td class="display-field-label">' + this.data.label + '</td>').attr({
+            "data-isRequired": this.data.isRequired
+        });
         var input = $('<input type="text" class="field-input form-control"></td>');
         input.attr({
             minlength: this.data["min-length"],
@@ -849,7 +919,9 @@ var DynamicForm = function () {
     }
     this.NumberField.prototype.toDisplayDOM = function () {
         var field = Object.getPrototypeOf(DynamicForm.NumberField.prototype).toDisplayDOM.call(this);
-        var label = $('<td class="display-field-label">' + this.data.label + '</td>');
+        var label = $('<td class="display-field-label">' + this.data.label + '</td>').attr({
+            "data-isRequired": this.data.isRequired
+        });;
         var input = $('<input type="number" class="field-input form-control"></td>');
         input.attr({
             min: this.data.min,
@@ -894,14 +966,18 @@ var DynamicForm = function () {
     }
     this.TextAreaField.prototype.toDisplayDOM = function () {
         var field = Object.getPrototypeOf(DynamicForm.TextAreaField.prototype).toDisplayDOM.call(this);
-        field.append('<label class="display-field-label">' + this.data.label + '</label>');
+        field.append('<label class="display-field-label">' + this.data.label + '</label>').attr({
+            "data-isRequired": this.data.isRequired
+        });;
         field.append('<input type="text" value="' + ((this.data.value != undefined) ? this.data.value : "") + '" placeholder="' + ((this.data.placeholder != undefined) ? this.data.placeholder : "") + '" >');
 
         return field;
     }
     this.TextAreaField.prototype.toDisplayDOM = function () {
         var field = Object.getPrototypeOf(DynamicForm.TextAreaField.prototype).toDisplayDOM.call(this);
-        var label = $('<td class="display-field-label">' + this.data.label + '</td>');
+        var label = $('<td class="display-field-label">' + this.data.label + '</td>').attr({
+            "data-isRequired": this.data.isRequired
+        });
         var textReminder = $('<span>You have <span class="char-left"></span> characters left.</span>');
 
         textReminder.find(".char-left").text(this.data["max-length"]);
@@ -940,7 +1016,7 @@ var DynamicForm = function () {
     this.RadioButtonGroup.constructor = this.FileUpload;
     this.RadioButtonGroup.prototype.toFieldDOM = function () {
         var dom = Object.getPrototypeOf(DynamicForm.RadioButtonGroup.prototype).toFieldDOM.call(this);
-        dom.append('<div class="option-list">');
+        dom.append('<div class="sub-set option-list">');
 
         return dom;
     }
@@ -957,7 +1033,9 @@ var DynamicForm = function () {
     }
     this.RadioButtonGroup.prototype.toDisplayDOM = function () {
         var field = Object.getPrototypeOf(DynamicForm.RadioButtonGroup.prototype).toDisplayDOM.call(this);
-        var label = $('<td class="display-field-label block">' + this.data.label + '</td>');
+        var label = $('<td class="display-field-label block">' + this.data.label + '</td>').attr({
+            "data-isRequired": this.data.isRequired
+        });;
         var optionList = $('<td class="display-field-input input-sm block" >');
         var name = DynamicForm.generateName(10);
 
@@ -1015,7 +1093,9 @@ var DynamicForm = function () {
     }
     this.CheckboxGroup.prototype.toDisplayDOM = function () {
         var field = Object.getPrototypeOf(DynamicForm.CheckboxGroup.prototype).toDisplayDOM.call(this);
-        var label = $('<td class="display-field-label block">' + this.data.label + '</td>');
+        var label = $('<td class="display-field-label block">' + this.data.label + '</td>').attr({
+            "data-isRequired": this.data.isRequired
+        });
         var optionList = $('<td class="display-field-input input-sm block" >');
         var name = DynamicForm.generateName(10);
         for (var i = 0; i < this.data["option-list"].length; i++) {
@@ -1057,7 +1137,9 @@ var DynamicForm = function () {
     }
     this.DropDownList.prototype.toDisplayDOM = function () {
         var field = Object.getPrototypeOf(DynamicForm.DropDownList.prototype).toDisplayDOM.call(this);
-        var label = $('<td class="display-field-label">' + this.data.label + '</td>');
+        var label = $('<td class="display-field-label">' + this.data.label + '</td>').attr({
+            "data-isRequired": this.data.isRequired
+        });;
         var optionList = $('<select class="field-input form-control">');
         for (var i = 0; i < this.data["option-list"].length; i++) {
             var option = $('<option value="' + i + '">' + this.data["option-list"][i] + '</option>');
@@ -1091,7 +1173,9 @@ var DynamicForm = function () {
     }
     this.ToogleButton.prototype.toDisplayDOM = function () {
         var field = Object.getPrototypeOf(DynamicForm.ToogleButton.prototype).toDisplayDOM.call(this);
-        var label = $('<td class="display-field-label">' + this.data.label + '</td>');
+        var label = $('<td class="display-field-label">' + this.data.label + '</td>').attr({
+            "data-isRequired": this.data.isRequired
+        });;
         var toggleButton = $('<label class="switch">');
         toggleButton.append('<input class="field-input" value="true" type="checkbox">');
         toggleButton.append('<span class="slider round">');
@@ -1126,7 +1210,9 @@ var DynamicForm = function () {
     }
     this.DatetimePicker.prototype.toDisplayDOM = function () {
         var field = Object.getPrototypeOf(DynamicForm.DatetimePicker.prototype).toDisplayDOM.call(this);
-        var label = $('<td class="display-field-label">' + this.data.label + '</td>');
+        var label = $('<td class="display-field-label">' + this.data.label + '</td>').attr({
+            "data-isRequired": this.data.isRequired
+        });;
         var datepicker = $('<input class="field-input form-control" type="text">');
         datepicker.datepicker();
         datepicker = $('<td class="display-field-input input-sm" >').append(datepicker);
@@ -1159,7 +1245,9 @@ var DynamicForm = function () {
     }
     this.FileUpload.prototype.toDisplayDOM = function () {
         var field = Object.getPrototypeOf(DynamicForm.FileUpload.prototype).toDisplayDOM.call(this);
-        var label = $('<td class="display-field-label">' + this.data.label + '</td>');
+        var label = $('<td class="display-field-label">' + this.data.label + '</td>').attr({
+            "data-isRequired": this.data.isRequired
+        });;
         var datepicker = $('<input class="field-input form-control" type="file">');
         datepicker = $('<td class="display-field-input input-sm" >').append(datepicker);
         field.append(label.add(datepicker));
@@ -1206,51 +1294,45 @@ var DynamicForm = function () {
 };
 DynamicForm = new DynamicForm();
 
-var formDataObject = {
-    "formSet": [{
-        "memberType": "Member",
-        "fieldSet": [{
-            "type": "first_name",
-            "data": {
-                "label": "First Name",
-                "data-type": 1,
-                "isRequired": true,
-                "min-length": 1,
-                "max-length": 64,
-                "regex": "[aZ].*"
-            }
-        }, {
-            "type": "last_name",
-            "data": {
-                "label": "Last Name",
-                "data-type": 1,
-                "isRequired": true,
-                "min-length": 1,
-                "max-length": 64,
-                "regex": "[aZ].*"
-            }
-        }, {
-            "type": "email",
-            "data": {
-                "label": "Email",
-                "data-type": 0,
-                "isRequired": true,
-                "min-length": 4,
-                "max-length": 320,
-                "regex": "^(([^<>()[]\\.,;:s@\"]+(.[^<>()[]\\.,;:s@\"]+)*)|(\".+\"))@(([[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}])|(([a-zA-Z-0-9]+.)+[a-zA-Z]{2,}))$"
-            }
-        }, {
-            "type": "phone_number",
-            "data": {
-                "label": "Phone Number",
-                "data-type": 2,
-                "isRequired": true,
-                "min-length": 9,
-                "max-length": 17,
-                "regex": "[0-9].*"
-            }
-        }]
-    }]
-};
-DynamicForm.formController.setFormDataObject(formDataObject);
-DynamicForm.formController.loadFormFromDataObject();
+var memberTypeID = $.urlParam("memberTypeID");
+var communityID = $.urlParam("communityID");
+var ref = firebase.database().ref("Community/" + communityID);
+// var formID = $.urlParam("form-id");
+var formDataObject = {};
+try {
+    // formDataObject = JSON.parse(localStorage["forms"])[0];
+
+    // DynamicForm.formController.setFormDataObject(formDataObject);
+    // DynamicForm.formController.loadFormFromDataObject();
+
+    ref.child("MemberType/" + memberTypeID + "/selectedForm").once("value", function (data) {
+        var formID = data.val();
+
+        if (formID != null) {
+            ref.child("FormSet/" + formID).once("value", function (data) {
+                formDataObject = data.val();
+
+                DynamicForm.formController.setFormDataObject(formDataObject);
+                DynamicForm.formController.loadFormFromDataObject();
+
+                $("#back-button").on("click.back-to-selection", function () {
+                    window.location.replace("select-member-form.html?communityID=" + communityID);
+                });
+                $("#submit-form").on("click.submit-form", function () {
+                    var form = DynamicForm.formSet.formSet[0];
+                    var values = form.getFormValues();
+                    var memberRecord = {
+                        memberTypeID: memberTypeID,
+                        values: values
+                    }
+
+                    ref.child("MemberRecord/TestMemberID").set(memberRecord).then(function () {
+                        window.location.replace("community-info.html?communityID=" + communityID);
+                    });
+                });
+            });
+        }
+    });
+} catch (error) {
+
+}

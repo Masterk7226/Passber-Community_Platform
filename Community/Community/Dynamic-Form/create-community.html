@@ -28,9 +28,6 @@
     <!-- JSPDF -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js" async></script>
 
-    <!-- Custom Lib -->
-    <script src="../js/custom-lib.js"></script>
-
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-database.js"></script>
@@ -55,7 +52,7 @@
             </style>
             <form action="select-template.html" style="background-color: rgba(255, 255, 255, 0.8);padding: 10px 20px;border-radius: 5px">
                 <fieldset>
-                    <legend>Create Event</legend>
+                    <legend>Create Community</legend>
                     <table>
                         <tbody>
                             <!-- <tr>
@@ -63,7 +60,7 @@
                                     <label>Logo</label>
                                 </td>
                                 <td>
-                                    <input type="file" class="event-logo">
+                                    <input type="file" class="community-logo">
                                 </td>
                             </tr> -->
                             <tr>
@@ -71,23 +68,23 @@
                                     <label>Name</label>
                                 </td>
                                 <td>
-                                    <input type="text" class="event-name">
+                                    <input type="text" class="community-name">
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <label>Start Time</label>
+                                    <label>Address</label>
                                 </td>
                                 <td>
-                                    <input type="text" class="event-start-time">
+                                    <input type="text" class="community-address">
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <label>End Time</label>
+                                    <label>Phone</label>
                                 </td>
                                 <td>
-                                    <input type="text" class="event-end-time">
+                                    <input type="text" class="community-phone">
                                 </td>
                             </tr>
                             <tr>
@@ -96,7 +93,7 @@
                                         <label>Description</label>
                                     </td>
                                     <td>
-                                        <textarea class="event-description"></textarea>
+                                        <textarea class="community-description"></textarea>
                                     </td>
                                 </tr>
                                 <tr>
@@ -120,19 +117,16 @@
 </body>
 
 <script>
-    $(".event-start-time").datepicker();
-    $(".event-end-time").datepicker();
     $(".next-button").on("click.next-page", function () {
-        var communityID = $.urlParam("communityID");
-        var ref = firebase.database().ref("Community/" + communityID+"/EventSet");
-        var name = $(".event-name").val();
-        var startTime = $(".event-start-time").val();
-        var endTime = $(".event-end-time").val();
-        var description = $(".event-description").val();
-        var event = {
+        var ref = firebase.database().ref("Community");
+        var name = $(".community-name").val();
+        var address = $(".community-address").val();
+        var phone = $(".community-phone").val();
+        var description = $(".community-description").val();
+        var community = {
             name: name,
-            startTime: startTime,
-            endTime: endTime,
+            address: address,
+            phone: phone,
             description: description
         };
 
@@ -146,12 +140,14 @@
         //     });
         // }).key;
 
-        ref.push(event, function () {
-            window.location.href = "manage-community.html?communityID=" + communityID;
-        });
+        var key = ref.push(community, function () {
+            var communityID = key;
+
+            window.location.href = "manage-member-type.html?communityID=" + communityID;
+        }).key;
     });
     $(".cancel-button").on("click.back-page", function () {
-        window.location.href = "manage-community.html?communityID=" + communityID;
+        window.location.href = "my-community-list.html";
     });
 </script>
 

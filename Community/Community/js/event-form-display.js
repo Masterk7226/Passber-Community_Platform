@@ -1,14 +1,7 @@
-// Dynamic Form
+// Form Display
 // By MAK Kai Chung
 
 var DynamicForm = function () {
-    this.backupList = {};
-    try {
-        this.backupList = JSON.parse(localStorage["community-form-backup"]);
-    } catch (error) {
-
-    }
-
     // Generate random ID
     this.generateID = function (length, text) {
         if (text === undefined) {
@@ -27,24 +20,6 @@ var DynamicForm = function () {
         return text
     }
 
-    // Convert miliseconds to readable date
-    this.toISODate = function (ms) {
-        if (isNaN(ms)) {
-            return ["0000", "00", "00"].join("-") + " " + ["00", "00", "00"].join(":");
-        }
-
-        var date = new Date(ms);
-        var year = date.getFullYear()
-        var month = date.getMonth() + 1;
-        var day = date.getDate();
-        var hours = date.getHours();
-        var mins = date.getMinutes();
-        var seconds = date.getSeconds();
-        var ISODate = [date, year, month, day, hours, mins, seconds];
-
-        return [year, month, day].join("-") + " " + [hours, mins, seconds].join(":");
-    }
-
     // Generate random name
     this.generateName = function (length) {
         var text = "";
@@ -61,129 +36,8 @@ var DynamicForm = function () {
         return text
     }
 
-    var jsonSample = {
-        "memberType": "Student",
-        "fieldSet": [{
-            "type": "first_name",
-            "data": {
-                "label": "First Name",
-                "data-type": 1,
-                "isRequired": true,
-                "min-length": 1,
-                "max-length": 64,
-                "regex": "[aZ].*"
-            }
-        }, {
-            "type": "last_name",
-            "data": {
-                "label": "Last Name",
-                "data-type": 1,
-                "isRequired": true,
-                "min-length": 1,
-                "max-length": 64,
-                "regex": "[aZ].*"
-            }
-        }, {
-            "type": "email",
-            "data": {
-                "label": "Email",
-                "data-type": 0,
-                "isRequired": true,
-                "min-length": 4,
-                "max-length": 320,
-                "regex": "^(([^<>()[]\\.,;:s@\"]+(.[^<>()[]\\.,;:s@\"]+)*)|(\".+\"))@(([[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}])|(([a-zA-Z-0-9]+.)+[a-zA-Z]{2,}))$"
-            }
-        }, {
-            "type": "phone_number",
-            "data": {
-                "label": "Phone Number",
-                "data-type": 2,
-                "isRequired": true,
-                "min-length": 9,
-                "max-length": 17,
-                "regex": "[0-9].*"
-            }
-        }, {
-            "type": "radio_button_group",
-            "data": {
-                "option-list": ["A", "B", "C"],
-                "label": "Radio Button Group"
-            }
-        }],
-        "isActivated": true,
-        "lastModified": 1520233033137
-    };
     // Form Display Controller
-    var FormSaveController = function () {
-        this.saveButton = $(".form-save-button");
-        this.activateButton = $(".form-activate-button");
-        this.additionalInfo = $("#additional-info");
-        this.enabledWarning = false;
-        this.saveButton.on("click.save-form", {
-            controller: this
-        }, function (event) {
-            var saveController = event.data.controller;
-
-            saveController.saveForm();
-        });
-    }
-    FormSaveController.prototype.saveForm = function () {
-        var jsonObject = DynamicForm.formSet.toJSONObject();
-
-        jsonObject.isActivated = this.activateButton.find('input[type="checkbox"]').prop("checked");
-        jsonObject.lastModified = $.now();
-        var date = DynamicForm.toISODate(jsonObject.lastModified);
-        forms[formID] = jsonObject;
-        ref.set(forms);
-        this.additionalInfo.find(".last-modified .modified-date").text(date);
-        this.disableSaveWarning();
-    }
-    FormSaveController.prototype.backupForm = function (form) {
-        var jsonObject = DynamicForm.formSet.toJSONObject();
-
-        jsonObject.isActivated = this.activateButton.find('input[type="checkbox"]').prop("checked");
-        jsonObject.lastModified = $.now();
-        var date = DynamicForm.toISODate(jsonObject.lastModified);
-
-        if (DynamicForm.backupList[communityID] == undefined) {
-            DynamicForm.backupList[communityID] = {};
-        }
-        if (DynamicForm.backupList[communityID][formID] != undefined) {
-            DynamicForm.backupList[communityID] = {};
-        }
-        DynamicForm.backupList[communityID][formID] = jsonObject;
-        localStorage["community-form-backup"] = JSON.stringify(DynamicForm.backupList);
-    }
-    FormSaveController.prototype.enableSaveWarning = function () {
-        if (!this.enabledWarning) {
-            this.enabledWarning = true;
-            $(window).on("beforeunload.save-warning", function () {
-                return confirm("Are you sure you want to leave without saving?");
-            });
-            this.enableAutoSaving();
-        }
-    }
-    FormSaveController.prototype.disableSaveWarning = function () {
-        if (this.enabledWarning) {
-            this.enabledWarning = false;
-            $(window).off("beforeunload.save-warning");
-            this.disableAutoSaving();
-        }
-    }
-    FormSaveController.prototype.enableAutoSaving = function () {
-        const interval = 5000;
-
-        this.autoSaving = window.setInterval(function () {
-            DynamicForm.formSaveController.backupForm();
-        }, interval)
-    }
-    FormSaveController.prototype.disableAutoSaving = function () {
-        window.clearInterval(this.autoSaving);
-    }
-    this.formSaveController = new FormSaveController();
-
-    // Form Display Controller
-    var FormEditController = function () {
+    var FormDisplayController = function () {
         this.formDataObject = {};
         this.fieldTypes = {};
         this.displayForm = $(".form-container");
@@ -204,39 +58,17 @@ var DynamicForm = function () {
             phone_number: "PhoneNumber"
         }
     }
-    FormEditController.prototype.loadFormFromDataObject = function () {
+    FormDisplayController.prototype.loadFormFromDataObject = function () {
         this.displayForm.empty();
 
         // for (var i = 0; i < this.formDataObject.formSet.length; i++) {
         var formJSONObject = this.formDataObject;
-        try {
-            if (DynamicForm.backupList[communityID][formID].lastModified > formJSONObject.lastModified) {
-                var wantRecorver = window.confirm("We have detected there was a backup available from the last crash.\nWould you like to recover it?");
-
-                if (wantRecorver) {
-                    var formDataObject = DynamicForm.backupList[communityID][formID];
-                    formDataObject.lastModified = formDataObject.lastModified;
-                    this.setFormDataObject(formDataObject);
-                    this.loadFormFromDataObject();
-                    return;
-                }
-            }
-        } catch (error) {
-
-        }
         var memberType = formJSONObject.memberType;
         var form = new DynamicForm.Form(memberType);
-        var date = DynamicForm.toISODate(formJSONObject.lastModified);
-        try {
-            DynamicForm.formSaveController.additionalInfo.find(".last-modified .modified-date").text(date);
-        } catch (error) {
+        var formDOM = form.toDisplayDOM();
 
-        }
-
-        DynamicForm.formSaveController.activateButton.find('input[type="checkbox"]').prop({
-            checked: formJSONObject.isActivated
-        });
-        DynamicForm.formSet.addForm(form);
+        this.displayForm.append(formDOM);
+        form.setDOM(formDOM)
 
         for (var fieldIndex = 0; fieldIndex < formJSONObject.fieldSet.length; fieldIndex++) {
             var fieldJSONObject = formJSONObject.fieldSet[fieldIndex];
@@ -244,26 +76,30 @@ var DynamicForm = function () {
             var fieldData = fieldJSONObject.data;
             var fieldLabel = fieldData.label;
             var field = new DynamicForm[this.fieldTypes[fieldType]](fieldLabel, fieldData);
-            var fieldDOM = field.toFieldDOM().appendTo(form.dom);
+            var fieldDOM = field.toDisplayDOM().appendTo(form.dom);
 
+            field.setDisplayDOM(fieldDOM);
             field.setDOM(fieldDOM);
-            field.doSave(false);
-            form.addField(field, false);
+            form.addField(field);
         }
+        DynamicForm.formSet.addForm(form);
+
+        var controlList = $('<tr class="control-list display-field">');
+        var backButton = $('<td>').append('<button id="back-button">Back</button>');
+        var submitForm = $('<td>').append('<button id="submit-form">Submit</button>');
+        controlList.append(backButton).append(submitForm);
+        formDOM.append(controlList);
         // }
     }
-    FormEditController.prototype.setFormDataObject = function (formDataObject) {
+    FormDisplayController.prototype.setFormDataObject = function (formDataObject) {
         this.formDataObject = formDataObject;
     }
-    this.formController = new FormEditController();
+    this.formController = new FormDisplayController();
 
     // Available Item Set
     var AvailableItemSet = function () {
         this.itemSet = [];
         this.itemList = $("#available-item-list");
-        $(".back-button").on("click.back-to-list", function () {
-            window.location.href = "form-list.html?communityID=" + communityID;
-        });
 
         this.addItem = function (item, category) {
             var targetCategory = $(".available-item-category .available-item-category-label[data-category='" + category + "']");
@@ -397,25 +233,12 @@ var DynamicForm = function () {
         var createdForm = $('<div class="form-container">').attr({
             id: generatedID,
             "data-form_id": index
-        });
-        this.formList.find("#dynamic_form-tab-controls").after(createdForm);
+        }).appendTo(this.formList);
         createdForm.sortable({
             tolerance: 'pointer',
             placeholder: "item-drop-position",
             start: function (event, ui) {
                 $(this).sortable("refresh");
-
-                var subSet = ui.item.find(".sub-set");
-                if (subSet.length >= 1) {
-                    var isEnabled = subSet.hasClass("enabled");
-
-                    if (isEnabled) {
-                        subSet.removeClass("enabled");
-                    }
-                }
-            },
-            sort: function (event, ui) {
-                DynamicForm.formSaveController.enableSaveWarning();
             },
             receive: function (event, ui) {
                 var formID = $(this).attr("data-form_id");
@@ -450,17 +273,19 @@ var DynamicForm = function () {
         return this.formSet.indexOf(form);
     }
     FormSet.prototype.toJSONObject = function () {
-        var jsonObject = {};
+        var jsonObject = {
+            formSet: []
+        };
 
-        // for (var i = 0; i < this.formSet.length; i++) {
-        var form = this.formSet[0];
-        // var index = jsonObject.formSet.length;
-        // if (this.formSet[0] === undefined) {
-        //     continue;
-        // }
+        for (var i = 0; i < this.formSet.length; i++) {
+            var form = this.formSet[i];
+            var index = jsonObject.formSet.length;
+            if (this.formSet[i] === undefined) {
+                continue;
+            }
 
-        jsonObject = this.formSet[0].toJSONObject();
-        // }
+            jsonObject.formSet[index] = this.formSet[i].toJSONObject();
+        }
 
         return jsonObject;
     }
@@ -581,14 +406,6 @@ var DynamicForm = function () {
     }
     this.PanelContent.prototype.setData = function (data) {
         this.data = data;
-        try {
-            this.doSave();
-        } catch (error) {
-
-        }
-    }
-    this.PanelContent.prototype.doSave = function () {
-
     }
     this.PanelContent.prototype.toPanelDOM = function () {
         var dom = $('<div class="tab-control">');
@@ -673,14 +490,10 @@ var DynamicForm = function () {
         var dom = $('<div class="field-control ' + name + '">');
         dom.append('<label class="field-text">' + label + '</label>');
         var optionList = $('<div class="field-option-list">');
-        var input = $('<input class="field-input form-control remove-option-button half-field ' + ((isHalf == true) ? "inline-field" : "") + '" type="text" >');
-        var optionItem = $('<div class="option-item">').append(input);
-
         for (var i = 0; i < values.length; i++) {
+            var option = $('<input class="field-input form-control ' + ((isHalf == true) ? "half-field" : "") + ' inline-field" type="text" >').val(((values[i] != undefined) ? values[i] : ""));
             var removeOptionButton = $('<i class="material-icons remove-option-button">close</i>');
-            var option = optionItem.clone();
 
-            option.find("input").val(((values[i] != undefined) ? values[i] : ""));
             removeOptionButton.on("click.remove-otpion", function (event) {
                 var beforeOption = $(this).prev();
 
@@ -688,7 +501,7 @@ var DynamicForm = function () {
             });
 
             if (i >= 1) {
-                option.append(removeOptionButton);
+                option = option.add(removeOptionButton);
             }
 
             optionList.append(option);
@@ -702,13 +515,11 @@ var DynamicForm = function () {
 
             addOptionButton.on("click.add-otpion", {
                 optionList: optionList,
-                isHalf: isHalf,
-                optionItem: optionItem.clone()
+                isHalf: isHalf
             }, function (event) {
                 var optionList = event.data.optionList;
                 var removeOptionButton = $('<i class="material-icons remove-option-button">close</i>');
                 var isHalf = event.data.isHalf;
-                var optionItem = event.data.optionItem;
 
                 removeOptionButton.on("click.remove-otpion", function (event) {
                     var beforeOption = $(this).prev();
@@ -716,11 +527,8 @@ var DynamicForm = function () {
                     $(this).add(beforeOption).remove();
                 });
 
-                var option = optionItem.clone()
-                    .append(removeOptionButton);
-                var input = option.find("input");
-
-                optionList.append(option);
+                var input = $('<input class="field-input form-control remove-option-button half-field ' + ((isHalf == true) ? "inline-field" : "") + '" type="text" >');
+                optionList.append($('<div>').append(input.add(removeOptionButton)));
                 input.focus();
             });
 
@@ -750,7 +558,7 @@ var DynamicForm = function () {
         this.memberType = memberType;
         this.fieldSet = [];
 
-        this.addField = function (field, enabledWarning) {
+        this.addField = function (field, form) {
             var index = this.fieldSet.length;
             this.fieldSet[index] = field;
             this.fieldSet[index].setForm(this);
@@ -775,22 +583,14 @@ var DynamicForm = function () {
 
                 form.removeField(field);
             });
-
-            if (enabledWarning === false) {
-                DynamicForm.formSaveController.disableSaveWarning();
-            } else {
-                DynamicForm.formSaveController.enableSaveWarning();
-            }
         }
         this.removeField = function (field) {
             var index = this.fieldSet.indexOf(field);
             this.removeFieldById(index);
-            DynamicForm.formSaveController.enableSaveWarning();
         }
         this.removeFieldById = function (id) {
             this.fieldSet[id].dom.remove();
             delete this.fieldSet[id];
-            DynamicForm.formSaveController.enableSaveWarning();
         }
         this.setMemberType = function (memberType) {
             this.memberType = memberType;
@@ -827,19 +627,29 @@ var DynamicForm = function () {
     this.Form.prototype.getIdByField = function (field) {
         return this.fieldSet.indexOf(field);
     }
-    this.Form.prototype.toDisplayDOM = function () {
-        var dom = $('<div class="custom-form-container">');
-        var orderedFieldList = [];
-        var fields = $(this.dom).find(".field-item-container");
-        for (var i = 0; i < fields.length; i++) {
-            var id = $(fields[i]).attr("data-id");
-            var field = this.getFieldById(id);
+    this.Form.prototype.setDOM = function (dom) {
+        this.dom = dom;
+    }
+    this.Form.prototype.setDisplayDOM = function (displayDOM) {
+        this.displayDOM = displayDOM;
+    }
+    this.Form.prototype.getFormValues = function () {
+        var valueObject = [];
 
-            orderedFieldList[i] = field;
+        for (var i = 0; i < this.fieldSet.length; i++) {
+            var field = this.fieldSet[i];
+
+            valueObject[i] = field.getFieldValue();
         }
 
-        for (var i = 0; i < orderedFieldList.length; i++) {
-            dom.append(orderedFieldList[i].toDisplayDOM());
+        return valueObject;
+    }
+    this.Form.prototype.toDisplayDOM = function () {
+        var dom = $('<div class="custom-form-container">');
+        var fields = $(this.dom).find(".field-item-container");
+
+        for (var i = 0; i < this.fieldSet.length; i++) {
+            dom.append(this.fieldSet[i].toDisplayDOM());
         }
 
         var headline = $('<tr class="display-field display-field-combined" data-type="member_type" colspan="2">');
@@ -853,17 +663,9 @@ var DynamicForm = function () {
             memberType: this.memberType,
             fieldSet: []
         };
-        var orderedFieldList = [];
-        var fields = $(this.dom).find(".field-item-container");
-        for (var i = 0; i < fields.length; i++) {
-            var id = $(fields[i]).attr("data-id");
-            var field = this.getFieldById(id);
 
-            orderedFieldList[i] = field;
-        }
-
-        for (var i = 0; i < orderedFieldList.length; i++) {
-            var field = orderedFieldList[i];
+        for (var i = 0; i < this.fieldSet.length; i++) {
+            var field = this.fieldSet[i];
             var index = jsonObject.fieldSet.length;
             if (field === undefined) {
                 continue;
@@ -889,6 +691,9 @@ var DynamicForm = function () {
     this.Field.constructor = this.Field;
     this.Field.prototype.setForm = function (form) {
         this.form = form;
+    }
+    this.Field.prototype.setDisplayDOM = function (displayDOM) {
+        this.displayDOM = displayDOM;
     }
     this.Field.prototype.setType = function (type) {
         this.type = type;
@@ -955,6 +760,17 @@ var DynamicForm = function () {
 
         return dom;
     }
+    this.Field.prototype.doValidate = function (value) {
+        return true;
+    }
+    this.Field.prototype.getFieldValue = function () {
+        var value = this.displayDOM.find("input, select, textarea").val();
+        if (this.doValidate(value)) {
+            return value;
+        } else {
+            throw "error";
+        }
+    }
     this.Field.prototype.getFieldSize = function (length) {
         length = parseInt(length);
         var fontSize = parseFloat($("body").css("font-size"));
@@ -978,19 +794,12 @@ var DynamicForm = function () {
 
         return jsonObject;
     }
-    this.Field.prototype.doSave = function (enabledWarning) {
+    this.Field.prototype.doSave = function () {
         Object.getPrototypeOf(DynamicForm.Field.prototype).doSave.call(this);
-        var formField = this.dom.find(".field-item");
-        formField.find(".form-label").text(this.data.label);
-        formField.find(".form-required").attr({
+        this.dom.find(".form-label").text(this.data.label);
+        this.dom.find(".form-required").attr({
             "data-required": this.data.isRequired
         });
-
-        if (enabledWarning === false) {
-            DynamicForm.formSaveController.disableSaveWarning();
-        } else {
-            DynamicForm.formSaveController.enableSaveWarning();
-        }
     }
     this.Field.prototype.setDOM = function (dom) {
         this.dom = dom;
@@ -1201,7 +1010,7 @@ var DynamicForm = function () {
         DynamicForm.Field.call(this, "radio_button_checked", typeLabel, "radio_button_group", data);
     }
     this.RadioButtonGroup.prototype = Object.create(this.Field.prototype);
-    this.RadioButtonGroup.constructor = this.RadioButtonGroup;
+    this.RadioButtonGroup.constructor = this.FileUpload;
     this.RadioButtonGroup.prototype.toFieldDOM = function () {
         var dom = Object.getPrototypeOf(DynamicForm.RadioButtonGroup.prototype).toFieldDOM.call(this);
         dom.append('<div class="sub-set option-list">');
@@ -1243,49 +1052,18 @@ var DynamicForm = function () {
     }
     this.RadioButtonGroup.prototype.doSave = function () {
         Object.getPrototypeOf(DynamicForm.RadioButtonGroup.prototype).doSave.call(this);
-        var dom = this.dom;
-        var optionListDOM = dom.find('.option-list');
+        // var dom = this.dom;
+        // var optionListDOM = dom.find('.option-list');
 
-        optionListDOM.empty();
-        for (var i = 0; i < this.data["option-list"].length; i++) {
-            var option = $('<div class="sub-item">');
-            var optionData = this.data["option-list"][i];
-            var optionLabel = $('<label class="option-label">').text(optionData);
+        // optionListDOM.empty();
+        // for (var i = 0; i < this.data["option-list"].length; i++) {
+        //     var option = $('<div class="option-item">');
+        //     var optionData = this.data["option-list"][i];
+        //     var optionLabel = $('<label class="option-label">').text(optionData);
 
-            option.append(optionLabel);
-            optionListDOM.append(option);
-        }
-
-        var formField = dom.find(".field-item");
-        var subSet = dom.find(".sub-set");
-        if (subSet.length >= 1) {
-            var subItem = subSet.children();
-            var subSign = formField.find(".sub-sign");
-
-            if (subItem.length >= 1) {
-
-                if (subSign.length === 0) {
-                    subSign = $('<i class="material-icons sub-sign">keyboard_arrow_down</i>');
-                    formField.prepend(subSign);
-                }
-
-                formField.off("click.enable-viewing-sub-set");
-                formField.on("click.enable-viewing-sub-set", {
-                    subSet: subSet
-                }, function (event) {
-                    var subSet = event.data.subSet;
-                    var isEnabled = subSet.hasClass("enabled");
-
-                    if (isEnabled) {
-                        subSet.removeClass("enabled");
-                    } else {
-                        subSet.addClass("enabled");
-                    }
-                });
-            } else {
-                subSign.remove();
-            }
-        }
+        //     option.append(optionLabel);
+        //     optionListDOM.append(option);
+        // }
     }
 
     // Checkbox Group
@@ -1293,10 +1071,9 @@ var DynamicForm = function () {
         DynamicForm.Field.call(this, "check_box", typeLabel, "checkbox_group", data);
     }
     this.CheckboxGroup.prototype = Object.create(this.Field.prototype);
-    this.CheckboxGroup.constructor = this.CheckboxGroup;
+    this.CheckboxGroup.constructor = this.FileUpload;
     this.CheckboxGroup.prototype.toFieldDOM = function () {
         var dom = Object.getPrototypeOf(DynamicForm.CheckboxGroup.prototype).toFieldDOM.call(this);
-        dom.append('<div class="sub-set option-list">');
 
         return dom;
     }
@@ -1315,7 +1092,7 @@ var DynamicForm = function () {
         var field = Object.getPrototypeOf(DynamicForm.CheckboxGroup.prototype).toDisplayDOM.call(this);
         var label = $('<td class="display-field-label block">' + this.data.label + '</td>').attr({
             "data-isRequired": this.data.isRequired
-        });;
+        });
         var optionList = $('<td class="display-field-input input-sm block" >');
         var name = DynamicForm.generateName(10);
         for (var i = 0; i < this.data["option-list"].length; i++) {
@@ -1333,62 +1110,14 @@ var DynamicForm = function () {
 
         return field;
     }
-    this.CheckboxGroup.prototype.doSave = function () {
-        Object.getPrototypeOf(DynamicForm.CheckboxGroup.prototype).doSave.call(this);
-        var dom = this.dom;
-        var optionListDOM = dom.find('.option-list');
-
-        optionListDOM.empty();
-        for (var i = 0; i < this.data["option-list"].length; i++) {
-            var option = $('<div class="sub-item">');
-            var optionData = this.data["option-list"][i];
-            var optionLabel = $('<label class="option-label">').text(optionData);
-
-            option.append(optionLabel);
-            optionListDOM.append(option);
-        }
-
-        var formField = dom.find(".field-item");
-        var subSet = dom.find(".sub-set");
-        if (subSet.length >= 1) {
-            var subItem = subSet.children();
-            var subSign = formField.find(".sub-sign");
-
-            if (subItem.length >= 1) {
-
-                if (subSign.length === 0) {
-                    subSign = $('<i class="material-icons sub-sign">keyboard_arrow_down</i>');
-                    formField.prepend(subSign);
-                }
-
-                formField.off("click.enable-viewing-sub-set");
-                formField.on("click.enable-viewing-sub-set", {
-                    subSet: subSet
-                }, function (event) {
-                    var subSet = event.data.subSet;
-                    var isEnabled = subSet.hasClass("enabled");
-
-                    if (isEnabled) {
-                        subSet.removeClass("enabled");
-                    } else {
-                        subSet.addClass("enabled");
-                    }
-                });
-            } else {
-                subSign.remove();
-            }
-        }
-    }
-
     // Dropdown List
     this.DropDownList = function (typeLabel, data) {
         DynamicForm.Field.call(this, "arrow_drop_down_circle", typeLabel, "drop_down_list", data);
     }
     this.DropDownList.prototype = Object.create(this.Field.prototype);
-    this.DropDownList.constructor = this.DropDownList;
+    this.DropDownList.constructor = this.FileUpload;
     this.DropDownList.prototype.toFieldDOM = function () {
         var dom = Object.getPrototypeOf(DynamicForm.DropDownList.prototype).toFieldDOM.call(this);
-        dom.append('<div class="sub-set option-list">');
 
         return dom;
     }
@@ -1419,59 +1148,13 @@ var DynamicForm = function () {
 
         return field;
     }
-    this.DropDownList.prototype.doSave = function () {
-        Object.getPrototypeOf(DynamicForm.DropDownList.prototype).doSave.call(this);
-        var dom = this.dom;
-        var optionListDOM = dom.find('.option-list');
-
-        optionListDOM.empty();
-        for (var i = 0; i < this.data["option-list"].length; i++) {
-            var option = $('<div class="sub-item">');
-            var optionData = this.data["option-list"][i];
-            var optionLabel = $('<label class="option-label">').text(optionData);
-
-            option.append(optionLabel);
-            optionListDOM.append(option);
-        }
-
-        var formField = dom.find(".field-item");
-        var subSet = dom.find(".sub-set");
-        if (subSet.length >= 1) {
-            var subItem = subSet.children();
-            var subSign = formField.find(".sub-sign");
-
-            if (subItem.length >= 1) {
-
-                if (subSign.length === 0) {
-                    subSign = $('<i class="material-icons sub-sign">keyboard_arrow_down</i>');
-                    formField.prepend(subSign);
-                }
-
-                formField.off("click.enable-viewing-sub-set");
-                formField.on("click.enable-viewing-sub-set", {
-                    subSet: subSet
-                }, function (event) {
-                    var subSet = event.data.subSet;
-                    var isEnabled = subSet.hasClass("enabled");
-
-                    if (isEnabled) {
-                        subSet.removeClass("enabled");
-                    } else {
-                        subSet.addClass("enabled");
-                    }
-                });
-            } else {
-                subSign.remove();
-            }
-        }
-    }
 
     // Toggle Button
     this.ToogleButton = function (typeLabel, data) {
         DynamicForm.Field.call(this, "invert_colors", typeLabel, "toggle_button", data);
     }
     this.ToogleButton.prototype = Object.create(this.Field.prototype);
-    this.ToogleButton.constructor = this.ToogleButton;
+    this.ToogleButton.constructor = this.FileUpload;
     this.ToogleButton.prototype.toFieldDOM = function () {
         var dom = Object.getPrototypeOf(DynamicForm.ToogleButton.prototype).toFieldDOM.call(this);
 
@@ -1504,7 +1187,7 @@ var DynamicForm = function () {
         DynamicForm.Field.call(this, "date_range", typeLabel, "date_time_picker", data);
     }
     this.DatetimePicker.prototype = Object.create(this.Field.prototype);
-    this.DatetimePicker.constructor = this.DatetimePicker;
+    this.DatetimePicker.constructor = this.FileUpload;
     this.DatetimePicker.prototype.toFieldDOM = function () {
         var dom = Object.getPrototypeOf(DynamicForm.DatetimePicker.prototype).toFieldDOM.call(this);
 
@@ -1606,122 +1289,52 @@ var DynamicForm = function () {
     this.PhoneNumber.prototype = Object.create(this.TextField.prototype);
     this.PhoneNumber.constructor = this.TextField;
 };
-
 DynamicForm = new DynamicForm();
 
-var basicFields = [
-    new DynamicForm.FirstName(null, {
-        label: "First Name",
-        "data-type": 1,
-        isRequired: true,
-        "min-length": 1,
-        "max-length": 64,
-        regex: '[aZ].*'
-    }), new DynamicForm.LastName(null, {
-        label: "Last Name",
-        "data-type": 1,
-        isRequired: true,
-        "min-length": 1,
-        "max-length": 64,
-        regex: '[aZ].*'
-    }), new DynamicForm.Email(null, {
-        label: "Email",
-        "data-type": 0,
-        isRequired: true,
-        "min-length": 4,
-        "max-length": 320,
-        regex: '^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
-    }), new DynamicForm.PhoneNumber(null, {
-        label: "Phone Number",
-        "data-type": 2,
-        isRequired: true,
-        "min-length": 9,
-        "max-length": 17,
-        regex: '[0-9].*'
-    })
-]
-var dynamicFields = [
-    new DynamicForm.Label("Label", {
-        label: "Label"
-    }),
-    new DynamicForm.TextField("Text", {
-        label: "Text",
-        "data-type": 0,
-        isRequired: false,
-    }),
-    new DynamicForm.NumberField("Number", {
-        label: "Number",
-        isRequired: false,
-        max: 0,
-        min: 0
-    }),
-    new DynamicForm.TextAreaField("Text Area", {
-        label: "Text Area",
-        isRequired: false,
-    }),
-    new DynamicForm.RadioButtonGroup("Radio Button Group", {
-        label: "Radio Button Group",
-        isRequired: false,
-        "option-list": [""]
-    }),
-    new DynamicForm.CheckboxGroup("Checkbox Group", {
-        label: "Checkbox Group",
-        isRequired: false,
-        "option-list": [""]
-    }),
-    new DynamicForm.DropDownList("Dropdown List", {
-        label: "Dropdown List",
-        isRequired: false,
-        "option-list": [""]
-    }),
-    new DynamicForm.ToogleButton("Toggle Button", {
-        label: "Toggle Button",
-        isRequired: false,
-    }),
-    new DynamicForm.DatetimePicker("Date / Time Picker", {
-        label: "Date / Time Picker",
-        isRequired: false,
-    }),
-    new DynamicForm.FileUpload("File Upload", {
-        label: "File Upload",
-        isRequired: false,
-    })
-]
-for (var i = 0; i < basicFields.length; i++) {
-    DynamicForm.availableItemSet.addItem(basicFields[i], "Basic Fields");
-}
-for (var i = 0; i < dynamicFields.length; i++) {
-    DynamicForm.availableItemSet.addItem(dynamicFields[i], "Dynamic Fields");
-}
-
-DynamicForm.availableItemSet.enableItemList();
-
 var communityID = $.urlParam("communityID");
-var formID = $.urlParam("form-id");
-var ref = firebase.database().ref("Community/" + communityID + "/FormSet");
+var eventID = $.urlParam("eventID");
+var ref = firebase.database().ref("Community/" + communityID);
+// var formID = $.urlParam("form-id");
 var formDataObject = {};
-var forms = [];
-
 try {
-    ref.once("value").then(function (data) {
-        if (data.val() != null) {
-            forms = data.val();
-        }
+    // formDataObject = JSON.parse(localStorage["forms"])[0];
 
-        formDataObject = forms[formID];
-        DynamicForm.formController.setFormDataObject(formDataObject);
-        DynamicForm.formController.loadFormFromDataObject();
-    });
-} catch (error) {
-    var jsonObject = [];
-
-    localStorage["forms"] = JSON.stringify(jsonObject);
-}
-
-try {
-    // formDataObject = JSON.parse(localStorage["forms"])[formID];
     // DynamicForm.formController.setFormDataObject(formDataObject);
     // DynamicForm.formController.loadFormFromDataObject();
-} catch (error) {
+    ref.child("MemberRecord/TestMemberID/memberTypeID").once("value", function (data) {
+        var memberTypeID = data.val();
+        
+        if (memberTypeID != null) {
+            ref.child("MemberType/" + memberTypeID + "/EventAssignment/" + eventID + "/selectedForm").once("value", function (data) {
+                var formID = data.val();
+                console.log(formID)
+                if (formID != null) {
+                    ref.child("Event/FormSet/" + formID).once("value", function (data) {
+                        formDataObject = data.val();
 
+                        DynamicForm.formController.setFormDataObject(formDataObject);
+                        DynamicForm.formController.loadFormFromDataObject();
+
+                        $("#back-button").on("click.back-to-selection", function () {
+                            window.location.replace("event-info.html?communityID=" + communityID + "&eventID=" + eventID);
+                        });
+                        $("#submit-form").on("click.submit-form", function () {
+                            var form = DynamicForm.formSet.formSet[0];
+                            var values = form.getFormValues();
+                            var memberRecord = {
+                                memberTypeID: memberTypeID,
+                                values: values
+                            }
+
+                            ref.child("EventSet/" + eventID + "/EventRecord/TestMemberID").set(memberRecord).then(function () {
+                                window.location.replace("event-info.html?communityID=" + communityID + "&eventID=" + eventID);
+                            });
+                        });
+                    });
+                }
+            });
+        }
+    });
+} catch (error) {
+console.log(error)
 }

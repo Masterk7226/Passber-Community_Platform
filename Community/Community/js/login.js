@@ -33,7 +33,7 @@ function LoginWithGoogle() {
 function onAuthStateChanged() {
   firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
-      window.location = '/Community';
+      window.location = '/Dynamic-Form/all-community-list.html';
     }
   });
 }
