@@ -278,7 +278,7 @@
 
 <script>
     var loadCommunitiesFromDatabase = function () {
-        let ref = firebase.database().ref("Community");
+        let ref = firebase.database().ref("Community").orderByChild("isActivated").equalTo(true);
 
         function createCommunityItem(data) {
             let communityList = $("#community-list");

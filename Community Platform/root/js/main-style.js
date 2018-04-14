@@ -131,22 +131,26 @@ function onAuthStateChanged() {
             alert('Welcome back to Passber!');
             window.location.reload();
         } else {
+            console.log(123)
             msgChange($('#div-login-msg'), $('#icon-login-msg'), $('#text-login-msg'), "error", "glyphicon-remove", "Login failed.");
         }
-        console.log(123)
+        
     });
 }
 
 $('#sign-out').click(function () {
-    var user = firebase.auth().currentUser;
-    user.signOut().then(function(){
+    firebase.auth().signOut().then(function () {
         window.location.reload();
     });
 });
 
-var user = firebase.auth().currentUser;
-if (user === null) {
-    $('.login-controls').hide();
-} else {
-    $('#account-management').hide();
-}
+$(".login-controls, #account-management").hide();
+var user = null;
+firebase.auth().onAuthStateChanged(function (user) {
+    window.user = user;
+    if (user != null) {
+        $('.login-controls').show();
+    } else {
+        $('#account-management').show();
+    }
+});
