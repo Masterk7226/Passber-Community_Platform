@@ -1,8 +1,14 @@
 // Form Display
 // By MAK Kai Chung
 
+// a package for Dynamic Form
 var DynamicForm = function () {
-    // Generate random ID
+    // Method to preserve the escape string from a text value
+    this.preserveEscapeString = function (text) {
+        return text.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
+    }
+
+    // Generate random ID for UI elements
     this.generateID = function (length, text) {
         if (text === undefined) {
             text = "";
@@ -20,7 +26,7 @@ var DynamicForm = function () {
         return text
     }
 
-    // Generate random name
+    // Generate random name for UI elements
     this.generateName = function (length) {
         var text = "";
         var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
@@ -33,15 +39,16 @@ var DynamicForm = function () {
             return generateName(length);
         }
 
-        return text
+        return text;
     }
 
     // Form Display Controller
-    // controller that displays the form
+    // controller that is in charge of processing the data from the json object and display the form 
     var FormDisplayController = function () {
-        this.formDataObject = {};
+        this.formDataObject = {}; // variable that stores the json object of the form
         this.fieldTypes = {};
         this.displayForm = $(".form-container");
+        // List for the conversion between its type name and the class name
         this.fieldTypes = {
             text_label: "Label",
             text_box: "TextField",
@@ -68,12 +75,12 @@ var DynamicForm = function () {
         var memberType = formJSONObject.memberType;
         var form = new DynamicForm.Form(memberType); // create a new form by the member type
         var formDOM = form.toDisplayDOM(); // store a form UI elements to formDOM by the created form objecct
-
         this.displayForm.append(formDOM); // Display the form UI object on screen
         form.setDOM(formDOM) // blind the form UI element to the form object
 
         // loop through the json object that stores the fields of the form
         for (var fieldIndex = 0; fieldIndex < formJSONObject.fieldSet.length; fieldIndex++) {
+            // extracts all values from the json object
             var fieldJSONObject = formJSONObject.fieldSet[fieldIndex];
             var fieldType = fieldJSONObject.type;
             var fieldData = fieldJSONObject.data;
@@ -93,6 +100,23 @@ var DynamicForm = function () {
         var submitForm = $('<td>').append('<button id="submit-form">Submit</button>');
         controlList.append(backButton).append(submitForm);
         formDOM.append(controlList);
+    }
+    FormDisplayController.prototype.validateFields = function () {
+        var allPassedValidation = true;
+        var form = DynamicForm.formSet.formSet[0];
+        var fieldSet = form.fieldSet;
+
+        for (var i = [] in fieldSet) {
+            var field = fieldSet[i];
+            var correctInput = field.doValidate();
+
+            if (!correctInput) {
+                allPassedValidation = false;
+                field.doError();
+            }
+        }
+
+        return allPassedValidation;
     }
     FormDisplayController.prototype.setFormDataObject = function (formDataObject) {
         this.formDataObject = formDataObject;
@@ -548,7 +572,9 @@ var DynamicForm = function () {
         var dom = $('<div class="field-control ' + name + ' ' + ((isInline == true) ? "inline-field" : "") + '">');
         dom.append('<label class="field-text">' + label + '</label>');
         var datepicker = $('<input class="field-input form-control" type="text" >').val(((value != undefined) ? value : ""));
-        datepicker.datepicker();
+        datepicker.datepicker({
+            dateFormat: "dd-mm-yy",
+        });;
         dom.append(datepicker);
 
         return dom;
@@ -741,7 +767,7 @@ var DynamicForm = function () {
 
 
                 if (switches.length >= 1) {
-                    var isChecked = ((switches.val() == "false")?false:true);
+                    var isChecked = ((switches.val() == "false") ? false : true);
                     data[name] = isChecked;
                     continue;
                 } else if (checkbox.length >= 1) {
@@ -764,15 +790,17 @@ var DynamicForm = function () {
         return dom;
     }
     this.Field.prototype.doValidate = function (value) {
-        return true;
+        const passedValidation = true;
+
+        return passedValidation;
+    }
+    this.Field.prototype.doError = function (value) {
+        return;
     }
     this.Field.prototype.getFieldValue = function () {
         var value = this.displayDOM.find("input, select, textarea").val();
-        if (this.doValidate(value)) {
-            return value;
-        } else {
-            throw "error";
-        }
+
+        return value;
     }
     this.Field.prototype.getFieldSize = function (length) {
         length = parseInt(length);
@@ -847,6 +875,11 @@ var DynamicForm = function () {
     // Text Field
     this.TextField = function (typeLabel, data) {
         DynamicForm.Field.call(this, "text_format", typeLabel, "text_box", data);
+
+        this.regexList = {
+            1: '^[\\w\s ]*$',
+            2: '^[0-9]*$'
+        };
     }
     this.TextField.prototype = Object.create(this.Field.prototype);
     this.TextField.constructor = this.TextField;
@@ -890,6 +923,53 @@ var DynamicForm = function () {
         field.append(label.add(input));
 
         return field;
+    }
+    this.TextField.prototype.doValidate = function () {
+        var passedValidation = Object.getPrototypeOf(DynamicForm.TextField.prototype).doValidate.call(this);
+        var value = this.getFieldValue();
+
+        try {
+            // Required Field
+            if (this.data.isRequired) {
+                if (value === "") {
+                    passedValidation = false;
+                }
+            }
+            // Min Length
+            if (!(value.length >= this.data["min-length"])) {
+                passedValidation = false;
+            }
+            // Max Length
+            if (!(value.length <= this.data["max-length"])) {
+                passedValidation = false;
+            }
+            console.log(this.data)
+
+            // Data Type
+            var dataTypeIndex = this.data["data-type"];
+            var dataTypeRegex = new RegExp(this.regexList[dataTypeIndex]);
+            if (!dataTypeRegex.test(value)) {
+                passedValidation = false;
+            }
+
+            // Custom Regular Expression 
+
+            var customRegex = new RegExp(this.data.regex); // convert the regex string to a regular expression object
+            console.log(!customRegex.test(value))
+            if (!customRegex.test(value)) { // validate the value
+                passedValidation = false;
+            }
+        } catch (error) {
+            console.log(error)
+        }
+
+        if (!passedValidation) {
+            this.displayDOM.addClass("error");
+        } else {
+            this.displayDOM.removeClass("error");
+        }
+
+        return passedValidation;
     }
 
     // Number Field
@@ -935,6 +1015,37 @@ var DynamicForm = function () {
         field.append(label.add(input));
 
         return field;
+    }
+    this.NumberField.prototype.doValidate = function () {
+        var passedValidation = Object.getPrototypeOf(DynamicForm.NumberField.prototype).doValidate.call(this);
+        var value = this.getFieldValue();
+
+        try {
+            // Required Field
+            if (this.data.isRequired) {
+                if (value === "") {
+                    passedValidation = false;
+                }
+            }
+            // Min Length
+            if (!(value >= this.data["min-length"])) {
+                passedValidation = false;
+            }
+            // Max Length
+            if (!(value <= this.data["max-length"])) {
+                passedValidation = false;
+            }
+        } catch (error) {
+            console.log(error)
+        }
+
+        if (!passedValidation) {
+            this.displayDOM.addClass("error");
+        } else {
+            this.displayDOM.removeClass("error");
+        }
+
+        return passedValidation;
     }
 
     // Text Area Field
@@ -1006,6 +1117,37 @@ var DynamicForm = function () {
         field.append(label.add(input));
 
         return field;
+    }
+    this.TextAreaField.prototype.doValidate = function () {
+        var passedValidation = Object.getPrototypeOf(DynamicForm.TextAreaField.prototype).doValidate.call(this);
+        var value = this.getFieldValue();
+
+        try {
+            // Required Field
+            if (this.data.isRequired) {
+                if (value === "") {
+                    passedValidation = false;
+                }
+            }
+            // Min Length
+            if (!(value.length >= this.data["min-length"])) {
+                passedValidation = false;
+            }
+            // Max Length
+            if (!(value.length <= this.data["max-length"])) {
+                passedValidation = false;
+            }
+        } catch (error) {
+            console.log(error)
+        }
+
+        if (!passedValidation) {
+            this.displayDOM.addClass("error");
+        } else {
+            this.displayDOM.removeClass("error");
+        }
+
+        return passedValidation;
     }
 
     // Radio Button Group
@@ -1113,6 +1255,27 @@ var DynamicForm = function () {
 
         return field;
     }
+    this.CheckboxGroup.prototype.doValidate = function () {
+        var passedValidation = Object.getPrototypeOf(DynamicForm.CheckboxGroup.prototype).doValidate.call(this);
+        var value = this.getFieldValue();
+
+        try {
+            // Required Field
+            if (this.data.isRequired) {
+                if (value === "") {
+                    passedValidation = false;
+                }
+            }
+        } catch (error) {
+            console.log(error)
+        }
+
+        if (!passedValidation) {
+            this.displayDOM.addClass("error");
+        }
+
+        return passedValidation;
+    }
     // Dropdown List
     this.DropDownList = function (typeLabel, data) {
         DynamicForm.Field.call(this, "arrow_drop_down_circle", typeLabel, "drop_down_list", data);
@@ -1214,11 +1377,49 @@ var DynamicForm = function () {
             "data-isRequired": this.data.isRequired
         });;
         var datepicker = $('<input class="field-input form-control" type="text">');
-        datepicker.datepicker();
+        datepicker.datepicker({
+            dateFormat: "dd-mm-yy",
+        });
         datepicker = $('<td class="display-field-input input-sm" >').append(datepicker);
         field.append(label.add(datepicker));
 
         return field;
+    }
+    this.DatetimePicker.prototype.doValidate = function () {
+        var passedValidation = Object.getPrototypeOf(DynamicForm.DatetimePicker.prototype).doValidate.call(this);
+        var value = this.getFieldValue();
+        console.log(value)
+
+        try {
+            // Required Field
+            if (this.data.isRequired) {
+                if (value === "") {
+                    passedValidation = false;
+                }
+            }
+
+            // Date selection range
+            var date = Date.parse(value);
+            var startDate = Date.parse(this.data["start-datetime"]);
+            // return false if the selected date is not between start date and end date
+            if (!(date >= startDate)) {
+                passedValidation = false;
+            }
+            var endDate = Date.parse(this.data["end-datetime"]);
+            if (!(date <= endDate)) {
+                passedValidation = false;
+            }
+        } catch (error) {
+            console.log(error)
+        }
+
+        if (!passedValidation) {
+            this.displayDOM.addClass("error");
+        } else {
+            this.displayDOM.removeClass("error");
+        }
+
+        return passedValidation;
     }
 
     // File Upload
@@ -1294,8 +1495,8 @@ var DynamicForm = function () {
 };
 DynamicForm = new DynamicForm();
 
-var memberTypeID = $.urlParam("memberTypeID");
 var communityID = $.urlParam("communityID");
+var eventID = $.urlParam("eventID");
 var ref = firebase.database().ref("Community/" + communityID);
 // var formID = $.urlParam("form-id");
 var formDataObject = {};
@@ -1304,35 +1505,43 @@ try {
 
     // DynamicForm.formController.setFormDataObject(formDataObject);
     // DynamicForm.formController.loadFormFromDataObject();
+    ref.child("MemberRecord/TestMemberID/memberTypeID").once("value", function (data) {
+        var memberTypeID = data.val();
 
-    ref.child("MemberType/" + memberTypeID + "/selectedForm").once("value", function (data) {
-        var formID = data.val();
+        if (memberTypeID != null) {
+            ref.child("MemberType/" + memberTypeID + "/EventAssignment/" + eventID + "/selectedForm").once("value", function (data) {
+                var formID = data.val();
+                console.log(formID)
+                if (formID != null) {
+                    ref.child("Event/FormSet/" + formID).once("value", function (data) {
+                        formDataObject = data.val();
 
-        if (formID != null) {
-            ref.child("FormSet/" + formID).once("value", function (data) {
-                formDataObject = data.val();
+                        DynamicForm.formController.setFormDataObject(formDataObject);
+                        DynamicForm.formController.loadFormFromDataObject();
 
-                DynamicForm.formController.setFormDataObject(formDataObject);
-                DynamicForm.formController.loadFormFromDataObject();
+                        $("#back-button").on("click.back-to-selection", function () {
+                            window.location.replace("event-info.html?communityID=" + communityID + "&eventID=" + eventID);
+                        });
+                        $("#submit-form").on("click.submit-form", function () {
+                            var form = DynamicForm.formSet.formSet[0];
+                            var values = form.getFormValues();
+                            var memberRecord = {
+                                memberTypeID: memberTypeID,
+                                values: values
+                            }
+                            var passedValidation = DynamicForm.formController.validateFields();
 
-                $("#back-button").on("click.back-to-selection", function () {
-                    window.location.replace("select-member-form.html?communityID=" + communityID);
-                });
-                $("#submit-form").on("click.submit-form", function () {
-                    var form = DynamicForm.formSet.formSet[0];
-                    var values = form.getFormValues();
-                    var memberRecord = {
-                        memberTypeID: memberTypeID,
-                        values: values
-                    }
-
-                    ref.child("MemberRecord/TestMemberID").set(memberRecord).then(function () {
-                        window.location.replace("community-info.html?communityID=" + communityID);
+                            if (passedValidation) {
+                                ref.child("EventSet/" + eventID + "/EventRecord/TestMemberID").set(memberRecord).then(function () {
+                                    window.location.replace("event-info.html?communityID=" + communityID + "&eventID=" + eventID);
+                                });
+                            }
+                        });
                     });
-                });
+                }
             });
         }
     });
 } catch (error) {
-
+    console.log(error)
 }

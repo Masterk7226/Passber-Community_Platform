@@ -32,8 +32,8 @@
     <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.11.0/firebase.js"></script>
-    <script src="../js/form-set-firebase.js"></script>
-    <script src="../js/init-firebase.js"></script>
+    <script src="/js/form-set-firebase.js"></script>
+    <script src="/js/init-firebase.js"></script>
 
 
     <link rel="stylesheet" href="../css/dynamic-form.css">
@@ -43,8 +43,8 @@
             background-color: rgb(218, 218, 218);
         }
 
-        #header {
-            display: flex;
+        #header{
+            display:flex;
             width: fit-content;
             text-align: center;
             font-size: 22px;
@@ -55,18 +55,9 @@
 
         .community-container {
             background-color: #ffffff;
-            cursor: pointer;
             margin-bottom: 5px;
             width: 100%;
             padding: 10px 10px;
-        }
-
-        .community-container:hover {
-            background-color: rgb(228, 228, 228);
-        }
-
-        .community-container:active {
-            background-color: rgb(204, 204, 204);
         }
 
         .community-name {
@@ -74,8 +65,7 @@
             font-size: 20px;
         }
 
-        .manage-community,
-        #create-community {
+        .manage-community, #create-community {
             display: inline-flex;
             justify-content: center;
             align-items: center;
@@ -83,7 +73,7 @@
             margin-left: 10px;
         }
 
-        #create-community {
+        #create-community{
             margin: 10px;
         }
 
@@ -99,11 +89,13 @@
     <div id="body-container" style="height: fit-content; min-height: 100vh; display: flex; align-items: center;">
         <div style="display:flex;height:100%;width:100%;align-items:center;justify-content:center">
             <div id="community-list-container">
-                <div id="header">Recommanded Community</div>
+                <div id="header">My Community</div>
 
                 <div id="community-list">
 
                 </div>
+
+                <button id="create-community"><i class="material-icons">add</i>Add Community</button>
             </div>
         </div>
     </div>
@@ -127,25 +119,27 @@
                 let community = $('<div class="community-container">').attr({
                     "data-id": key
                 });
-                community.on("click.view-community-info", {
+                let name = $('<div class="community-name">').text(communityObject.name);
+                let manageButton = $('<button class="manage-community">Manage</button>').prepend(
+                    '<i class="material-icons">edit</i>');
+                manageButton.on("click", {
                     communityID: key
                 }, function (event) {
                     var communityID = event.data.communityID;
 
-                    window.location.replace("community-info.html?communityID=" + communityID);
+                    window.location.href = "manage-community.html?communityID=" + communityID;
                 });
-                let name = $('<div class="community-name">').text(communityObject.name);
                 // let address = $('<div class="community-address">').text(communityObject.address);
                 // let phone = $('<div class="community-phone">').text(communityObject.phone);
                 let description = $('<div class="community-description">').append($('<pre>').text(communityObject.description));
 
-                community.append(name).append(description);
+                community.append(name).append(manageButton).append(description);
 
                 communityList.append(community);
             }
         }
 
-        ref.on("value", function (data) {
+        ref.once("value", function (data) {
             createCommunityItem(data);
         });
         ref.on("child_changed", function () {
@@ -153,6 +147,10 @@
         });
     }
     loadCommunitiesFromDatabase();
+
+    $("#create-community").on("click.create-community", function(){
+        window.location.href="create-community.html";
+    });
 </script>
 
 </html>
