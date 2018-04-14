@@ -1,5 +1,6 @@
 /* Custom Styles */
 
+
 /* The switch - the box around the slider */
 
 .switch {
@@ -9,11 +10,13 @@
     height: 34px;
 }
 
+
 /* Hide default HTML checkbox */
 
 .switch input {
     display: none;
 }
+
 
 /* The slider */
 
@@ -55,6 +58,7 @@ input:checked+.slider:before {
     transform: translateX(26px);
 }
 
+
 /* Rounded sliders */
 
 .slider.round {
@@ -65,7 +69,9 @@ input:checked+.slider:before {
     border-radius: 50%;
 }
 
+
 /* End of Custom Styles */
+
 
 /* Dynamic Form */
 
@@ -92,6 +98,7 @@ body {
     align-items: center;
     justify-content: center;
 }
+
 
 /* Control List */
 
@@ -139,6 +146,7 @@ body {
     font-size: 14px;
 }
 
+
 /* Form Preview */
 
 .form-container {
@@ -155,6 +163,7 @@ body {
     --display-input-padding-width: 12px;
     background-color: #FFFFFF;
 }
+
 
 /* Form Display */
 
@@ -179,20 +188,10 @@ body {
     font-weight: 700;
 }
 
-.custom-form-container .display-field.error .display-field-input .field-input {
-    border: none;
-    box-shadow: 0 0 3px rgb(255, 0, 0);
-}
-
 .custom-form-container pre {
     width: fit-content;
     margin-bottom: 0;
     padding: 0;
-}
-
-.custom-form-container .display-field-input .field-input {
-    transition: box-shadow 0.5s;
-    will-change: box-shadow;
 }
 
 .custom-form-container .display-field-label,
@@ -256,6 +255,7 @@ body {
     background-color: transparent;
     border: none;
 }
+
 
 /* Control List */
 

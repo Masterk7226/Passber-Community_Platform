@@ -31,7 +31,7 @@
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/4.12.1/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.11.0/firebase.js"></script>
     <script src="../js/form-set-firebase.js"></script>
     <script src="../js/init-firebase.js"></script>
 
@@ -146,7 +146,6 @@
         }
 
         ref.on("value", function (data) {
-            console.log(data.val())
             createCommunityItem(data);
         });
         ref.on("child_changed", function () {
