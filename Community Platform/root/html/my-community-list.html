@@ -280,7 +280,7 @@
         }
     });
     var loadCommunitiesFromDatabase = function () {
-        let ref = firebase.database().ref("Community").orderByChild("isActivated").equalTo(true);
+        let ref = firebase.database().ref("Community").orderByChild("organizerID").equalTo(user.uid);
 
         function createCommunityItem(data) {
             let communityList = $("#community-list");
