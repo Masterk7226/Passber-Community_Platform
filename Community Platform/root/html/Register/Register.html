@@ -61,6 +61,7 @@
     var pwd   = document.getElementById("Password").value;
     var spwd  = document.getElementById("sPassword").value;
     var ref   = firebase.database().ref("UserInfo");
+    var valid = false;
 
     //First step, Check repeat password
     if (pwd == spwd) {
@@ -68,21 +69,31 @@
       ref.once('value',function(data) {
         data.forEach(function (childData) {
           if ( childData.val().email == email ) {
-            alert("Email have been used!");
+            valid = false;
           } else {
-
-            var prepare = {
-              "email" : email,
-              "password" : pwd
-            };
-
-            ref.push(prepare);
-            alert("Success");
-
+            valid = true;
           }
         });
+        if(valid==true) {
+          createAccount();
+          // alert("function");
+        } else {
+          alert("Email has been used.");
+        }
       });
     }
+
+
+      function createAccount() {
+        var prepare = {
+          "email" : email,
+          "password" : pwd
+        };
+
+        ref.push(prepare);
+        alert("Success");
+        window.location = "../Login/Login.html";
+      }
 
   }
 </script>

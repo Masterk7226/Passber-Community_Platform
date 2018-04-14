@@ -66,15 +66,24 @@
   function login() {
     var email = document.getElementById('email').value;
     var password = document.getElementById('password').value;
+    var valid = false;
 
     var ref = firebase.database().ref("UserInfo");
     ref.once('value',function (data){
       data.forEach(function (childData) {
-        if (childData.val().email == email || childData.val().password == password) {
-          localStorage.setItem("email", email);
-          alert("Login Success");
+        if (childData.val().email == email && childData.val().password == password) {
+          valid = true;
+        } else {
+          valid = false;
         }
       });
+      if (valid == true) {
+        localStorage.setItem("email", email);
+        alert("Login Success");
+        window.location = "../all-community-list.html";
+      } else {
+        alert("Wrong email or password.");
+      }
     });
   }
 
