@@ -1,0 +1,85 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+
+    <!--****** Plugin ******-->
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!-- Google Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <!-- Bootstrap & jQuery -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" async></script>
+
+    <!-- Open Sans -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+
+    <!-- PT Mono -->
+    <link href="https://fonts.googleapis.com/css?family=PT+Mono" rel="stylesheet">
+
+    <!-- JSPDF -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js" async></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.11.0/firebase.js"></script>
+    <script src="../../js/form-set-firebase.js"></script>
+    <script src="../../js/init-firebase.js"></script>
+</head>
+
+<body>
+
+<center>
+  <h1>Login</h1>
+  <table>
+    <tr>
+      <td><label for="email">Email:</label></td>
+      <td><input id="email" type="text" name="email"></td>
+    </tr>
+    <tr>
+      <td><label for="password">Password:</label></td>
+      <td><input id="password" type="password" name="password"></td>
+    </tr>
+    <tr>
+      <td><button id="submit" type="submit">Submit</button></td>
+      <td><input  id="reset"  type="reset" value="Reset" /></td>
+    </tr>
+  </table>
+</center>
+
+</body>
+</html>
+
+<script type="text/javascript">
+  document.getElementById('submit').addEventListener('click',login);
+  document.getElementById('reset').addEventListener('click',reset);
+
+  function login() {
+    var email = document.getElementById('email').value;
+    var password = document.getElementById('password').value;
+
+    var ref = firebase.database().ref("UserInfo");
+    ref.once('value',function (data){
+      data.forEach(function (childData) {
+        if (childData.val().email == email || childData.val().password == password) {
+          localStorage.setItem("email", email);
+          alert("Login Success");
+        }
+      });
+    });
+  }
+
+  function reset(){ //Reset the email and password column to empty
+    var email = document.getElementById('email').value = "";
+    var password = document.getElementById('password').value = "";
+  }
+</script>
