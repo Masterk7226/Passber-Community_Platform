@@ -381,7 +381,7 @@ FriendlyChat.prototype.DelTheMember = function() {
       window.location.reload();
     } else {
       alert("Not Valid Email");
-    }
+    }公司
 
   } else {
     alert("The Email field is empty!");
