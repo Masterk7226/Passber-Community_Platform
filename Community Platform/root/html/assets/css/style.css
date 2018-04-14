@@ -380,21 +380,6 @@ footer {
     }
 }
 
-/* #####################################################################
-   #
-   #   Project       : Modal Login with jQuery Effects
-   #   Author        : Rodrigo Amarante (rodrigockamarante)
-   #   Version       : 1.0
-   #   Created       : 07/28/2015
-   #   Last Change   : 08/02/2015
-   #
-   ##################################################################### */
-
-@import url(http://fonts.googleapis.com/css?family=Roboto);
-* {
-    font-family: 'Roboto', sans-serif;
-}
-
 #login-modal {
     display: flex;
     justify-content: center;
@@ -408,6 +393,15 @@ footer {
 #login-modal input[type=text],
 input[type=password] {
     margin-top: 10px;
+}
+
+#google_login{
+	width: 100%;
+	margin-top:10px;
+}
+
+.dropdown-menu a{
+	color: black !important;
 }
 
 #div-login-msg,
@@ -457,9 +451,9 @@ input[type=password] {
     background-color: #eb575b !important;
 }
 
-#img_logo {
-    max-height: 100px;
-    max-width: 100px;
+#img_logo, .img_logo {
+    max-height: 100px!important;
+    max-width: 100px!important;
 }
 
 /* #########################################
