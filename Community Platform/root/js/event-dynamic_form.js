@@ -9,7 +9,6 @@ var DynamicForm = function () {
 
     }
 
-
     // Generate random ID
     this.generateID = function (length, text) {
         if (text === undefined) {
@@ -62,6 +61,58 @@ var DynamicForm = function () {
         return text
     }
 
+    var jsonSample = {
+        "memberType": "Student",
+        "fieldSet": [{
+            "type": "first_name",
+            "data": {
+                "label": "First Name",
+                "data-type": 1,
+                "isRequired": true,
+                "min-length": 1,
+                "max-length": 64,
+                "regex": "[aZ].*"
+            }
+        }, {
+            "type": "last_name",
+            "data": {
+                "label": "Last Name",
+                "data-type": 1,
+                "isRequired": true,
+                "min-length": 1,
+                "max-length": 64,
+                "regex": "[aZ].*"
+            }
+        }, {
+            "type": "email",
+            "data": {
+                "label": "Email",
+                "data-type": 0,
+                "isRequired": true,
+                "min-length": 4,
+                "max-length": 320,
+                "regex": "^(([^<>()[]\\.,;:s@\"]+(.[^<>()[]\\.,;:s@\"]+)*)|(\".+\"))@(([[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}])|(([a-zA-Z-0-9]+.)+[a-zA-Z]{2,}))$"
+            }
+        }, {
+            "type": "phone_number",
+            "data": {
+                "label": "Phone Number",
+                "data-type": 2,
+                "isRequired": true,
+                "min-length": 9,
+                "max-length": 17,
+                "regex": "[0-9].*"
+            }
+        }, {
+            "type": "radio_button_group",
+            "data": {
+                "option-list": ["A", "B", "C"],
+                "label": "Radio Button Group"
+            }
+        }],
+        "isActivated": true,
+        "lastModified": 1520233033137
+    };
     // Form Display Controller
     var FormSaveController = function () {
         this.saveButton = $(".form-save-button");
@@ -275,6 +326,7 @@ var DynamicForm = function () {
     var FormSet = function () {
         this.formSet = [];
         this.formList = $("#form-container-list");
+        this.addButton = this.formList.find("#dynamic_form-tab-controls #add-form-button");
         this.currentForm;
         this.previousEditingField;
         this.waitForProcessedField;
@@ -283,9 +335,14 @@ var DynamicForm = function () {
             axis: "x",
             containment: "#dynamic_form-tab-controls",
             items: ".ui-tabs-tab",
+            cancel: "#add-form-button",
             stop: function () {
                 DynamicForm.formSet.tabContainer.tabs("refresh");
             }
+        });
+        this.addButton.on("click.add-form", function (event) {
+            var form = new DynamicForm.Form("", {});
+            DynamicForm.controlPanel.enablePanel(form);
         });
 
         this.enableFieldEdition = function (field, form) {
@@ -680,9 +737,7 @@ var DynamicForm = function () {
         var dom = $('<div class="field-control ' + name + ' ' + ((isInline == true) ? "inline-field" : "") + '">');
         dom.append('<label class="field-text">' + label + '</label>');
         var datepicker = $('<input class="field-input form-control" type="text" >').val(((value != undefined) ? value : ""));
-        datepicker.datepicker({
-            dateFormat:  "dd-mm-yy",
-        });
+        datepicker.datepicker();
         dom.append(datepicker);
 
         return dom;
@@ -745,6 +800,26 @@ var DynamicForm = function () {
     this.Form.constructor = this.Form;
     this.Form.prototype.getFieldById = function (id) {
         return this.fieldSet[id];
+    }
+    this.Form.prototype.toPanelDOM = function () {
+        var dom = Object.getPrototypeOf(DynamicForm.Form.prototype).toPanelDOM.call(this);
+        var saveButton = $('<input type="button" class="control-save save-form" value="Create"/>');
+        saveButton.on("click.save-form", {
+            form: this
+        }, function (event) {
+            var form = event.data.form;
+            var value = $(this).closest("#item-manage-control").find(".field-control.member-type input").val();
+
+            form.setMemberType(value);
+            DynamicForm.formSet.addForm(form);
+            DynamicForm.controlPanel.disablePanel();
+        });
+        dom.append(saveButton);
+        dom.append(this.createHeader("Create Form"));
+        var memberTypeField = this.createText("member-type", "Member Type", "");
+        dom.append(memberTypeField);
+
+        return dom;
     }
     this.Form.prototype.getFieldById = function (id) {
         return this.fieldSet[id];
@@ -858,7 +933,7 @@ var DynamicForm = function () {
 
 
                 if (switches.length >= 1) {
-                    var isChecked = ((switches.val() == "false") ? false : true);
+                    var isChecked = ((switches.val() == "false")?false:true);
                     data[name] = isChecked;
                     continue;
                 } else if (checkbox.length >= 1) {
@@ -870,7 +945,6 @@ var DynamicForm = function () {
                     continue;
                 }
 
-                // Preserve the escape string from text value before stroring them to the data object
                 data[name] = $(allInputs[i]).val();
             }
 
@@ -1454,9 +1528,7 @@ var DynamicForm = function () {
             "data-isRequired": this.data.isRequired
         });;
         var datepicker = $('<input class="field-input form-control" type="text">');
-        datepicker.datepicker({
-            dateFormat:  "dd-mm-yy",
-        });
+        datepicker.datepicker();
         datepicker = $('<td class="display-field-input input-sm" >').append(datepicker);
         field.append(label.add(datepicker));
 
@@ -1544,28 +1616,28 @@ var basicFields = [
         isRequired: true,
         "min-length": 1,
         "max-length": 64,
-        regex: '^[A-z\\u4E00-\\u9FFF\\u3400-\\u4DFF\\s ]*$'
+        regex: '[aZ].*'
     }), new DynamicForm.LastName(null, {
         label: "Last Name",
         "data-type": 1,
         isRequired: true,
         "min-length": 1,
         "max-length": 64,
-        regex: '^[A-z\\u4E00-\\u9FFF\\u3400-\\u4DFF\\s ]*$'
+        regex: '[aZ].*'
     }), new DynamicForm.Email(null, {
         label: "Email",
         "data-type": 0,
         isRequired: true,
         "min-length": 4,
         "max-length": 320,
-        regex: '^\\w+@[a-zA-Z_]+?\\.[a-zA-Z]{2,3}$'
+        regex: '^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
     }), new DynamicForm.PhoneNumber(null, {
         label: "Phone Number",
         "data-type": 2,
         isRequired: true,
-        "min-length": 8,
+        "min-length": 9,
         "max-length": 17,
-        regex: '^[0-9]*$'
+        regex: '[0-9].*'
     })
 ]
 var dynamicFields = [
