@@ -74,6 +74,7 @@ body {
 }
 
 #body-container {
+    background-image: url("../img/background-office-10.jpg");
     height: 100vh;
     width: 100vw;
     background-color: #F1F1F1;

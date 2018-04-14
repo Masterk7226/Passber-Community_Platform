@@ -38,6 +38,10 @@
     <script src="../js/form-set-firebase.js"></script>
     <script src="../js/init-firebase.js"></script>
 
+    <!-- Main Style -->
+    <script src="../js/main-style.js"></script>
+    <link href="../css/page-style.css" rel="stylesheet">
+
 
     <link rel="stylesheet" href="../css/dynamic-form.css">
 
@@ -53,7 +57,7 @@
                     margin-bottom: 5px
                 }
             </style>
-            <form action="select-template.html" style="background-color: rgba(255, 255, 255, 0.8);padding: 10px 20px;border-radius: 5px">
+            <form action="select-template.html" style="background-color: rgba(255, 255, 255, 0.8);padding: 10px 20px;border-radius: 5px" class="content-container">
                 <fieldset>
                     <legend>Create Event</legend>
                     <table>
@@ -124,7 +128,7 @@
     $(".event-end-time").datepicker();
     $(".next-button").on("click.next-page", function () {
         var communityID = $.urlParam("communityID");
-        var ref = firebase.database().ref("Community/" + communityID+"/EventSet");
+        var ref = firebase.database().ref("Community/" + communityID + "/EventSet");
         var name = $(".event-name").val();
         var startTime = $(".event-start-time").val();
         var endTime = $(".event-end-time").val();

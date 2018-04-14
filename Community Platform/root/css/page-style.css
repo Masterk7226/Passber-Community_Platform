@@ -1,0 +1,12 @@
+
+#body-container{
+    background-image: url("../img/background-office-10.jpg");
+}
+
+.content-container{
+    min-width: 75%;
+    background-color: rgb(218, 218, 218);
+    padding: 3% 3%;
+    opacity: 0.8;
+    box-shadow: 0 0 0.8823em 0 rgba(0,0,0,.5);
+}
