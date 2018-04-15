@@ -394,27 +394,29 @@
             var joinButton = $("#join-event");
 
             if (eventRecord == null && !isOrganizer) {
-                communityRef.child("MemberRecord/TestMemberID/memberTypeID").once("value", function (data) {
+                communityRef.child("MemberRecord/" + user.uid + "/memberTypeID").once("value", function (data) {
                     var memberTypeID = data.val();
-
+                    console.log("MemberType/" + memberTypeID + "/EventAssignment/" + eventID +
+                        "/selectedForm")
                     communityRef.child("MemberType/" + memberTypeID + "/EventAssignment/" + eventID +
-                        "/selectedForm").once("value", function (data) {
-                        var formID = data.val();
+                            "/selectedForm")
+                        .once("value", function (data) {
+                            var formID = data.val();
 
-                        if (formID != null && formID != -1) {
-                            joinButton.removeClass("disabled");
-                            joinButton.on("click.join-event", function () {
-                                window.location.replace(
-                                    "event-form-display.html?communityID=" +
-                                    communityID +
-                                    "&eventID=" + eventID);
-                            });
-                        } else {
-                            var alertMessage = $("#alert-message");
+                            if (formID != null && formID != -1) {
+                                joinButton.removeClass("disabled");
+                                joinButton.on("click.join-event", function () {
+                                    window.location.replace(
+                                        "event-form-display.html?communityID=" +
+                                        communityID +
+                                        "&eventID=" + eventID);
+                                });
+                            } else {
+                                var alertMessage = $("#alert-message");
 
-                            alertMessage.addClass("displayed");
-                        }
-                    });
+                                alertMessage.addClass("displayed");
+                            }
+                        });
                 });
                 return;
             } else {
@@ -459,9 +461,11 @@
         //         updateFormList(data)
         //     });
         // }
-        ref.child("TestMemberID").on("value", function (data) {
-            updateMemberStatus(data);
-        });
+        if (user != null) {
+            ref.child(user.uid).on("value", function (data) {
+                updateMemberStatus(data);
+            });
+        }
         ref.on("child_changed", function () {
 
         });

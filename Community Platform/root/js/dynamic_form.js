@@ -1,6 +1,39 @@
 // Dynamic Form
 // By MAK Kai Chung
 
+// JSON Structure Format of a form:
+// {
+//     "memberType": "Universal Form - v1.0",
+//     "fieldSet": [{
+//         "type": "text_box",
+//         "data": {
+//             "label": "Text",
+//             "data-type": 0,
+//             "isRequired": false
+//         }
+//     }, {
+//         "type": "number_field",
+//         "data": {
+//             "label": "Number",
+//             "isRequired": false,
+//             "max": 0,
+//             "min": 0
+//         }
+//     }, {
+//         "type": "text_area",
+//         "data": {
+//             "label": "Text Area",
+//             "isRequired": false
+//         }
+//     }, {
+//         "type": "radio_button_group",
+//         "data": {
+//             "option-list": ["A", "B", "C"],
+//             "label": "Radio Button Group",
+//             "isRequired": false
+//         }
+//     }]
+// }
 // Notes: 
 // 1. Form Display & Dynamic Form use the same engine
 // 2. something wrapped by $() means getting or creating the UI components / elements from the runing html

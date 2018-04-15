@@ -27,10 +27,11 @@ var FormList = function () {
                     var memberTypeField = infoForm.find(".memberType");
                     var memberType = memberTypeField.val();
                     var form = new FormList.Form(memberType, []);
-                    FormList.addForm(form);
-                    var formID = form.getId();
+                    if (FormList.addForm(form) != -1) {
+                        var formID = form.getId();
 
-                    FormList.directToEditor(formID);
+                        FormList.directToEditor(formID);
+                    }
                 },
                 Cancel: function () {
                     $(this).dialog("destroy");
@@ -134,10 +135,11 @@ var FormList = function () {
                     var id = infoForm.attr("data-form-id");
                     var templateObject = FormList.getTemplateById(id);
                     var form = new FormList.Form(memberType, templateObject.fieldSet);
-                    FormList.addForm(form);
-                    var formID = form.getId();
+                    if (FormList.addForm(form) != -1) {;
+                        var formID = form.getId();
 
-                    FormList.directToEditor(formID);
+                        FormList.directToEditor(formID);
+                    }
                 },
                 Cancel: function () {
                     $(this).dialog("destroy");
@@ -173,6 +175,16 @@ FormList.prototype.addForm = function (form) {
     var memberType = form.getMemberType();
     var fieldSet = form.getFieldSet();
     var index = forms.length;
+
+    if (this.isExist(memberType)) {
+        return -1;
+    }
+    if (memberType == "") {
+        return -1;
+    }
+    if(this.formSet.length == 20){
+        return -1;
+    }
 
     var jsonObject = {
         memberType: memberType,
