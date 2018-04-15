@@ -1,6 +1,13 @@
 // Dynamic Form
 // By MAK Kai Chung
+
+// Notes: 
+// something wrapped by $() means getting or creating the UI components / elements from the runing html
+
+// Create a package for Dynamic Form
 var DynamicForm = function () {
+    // Extract the auto-saving back up forms from the browser local storage
+    // Local storage  will not be deleted even when the browser closed unless user delete manually
     this.backupList = {};
     try {
         this.backupList = JSON.parse(localStorage["community-form-backup"]);
@@ -8,8 +15,7 @@ var DynamicForm = function () {
 
     }
 
-
-    // Generate random ID
+    // Global method to generate random ID for UI elements
     this.generateID = function (length, text) {
         if (text === undefined) {
             text = "";
@@ -24,10 +30,10 @@ var DynamicForm = function () {
             return generateID(length);
         }
 
-        return text
+        return text;
     }
 
-    // Convert miliseconds to readable date
+    // Global method to convert miliseconds to readable ISO date format
     this.toISODate = function (ms) {
         if (isNaN(ms)) {
             return ["0000", "00", "00"].join("-") + " " + ["00", "00", "00"].join(":");
@@ -45,7 +51,7 @@ var DynamicForm = function () {
         return [year, month, day].join("-") + " " + [hours, mins, seconds].join(":");
     }
 
-    // Generate random name
+    // Global method to generate random name for UI elements
     this.generateName = function (length) {
         var text = "";
         var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
@@ -58,41 +64,56 @@ var DynamicForm = function () {
             return generateName(length);
         }
 
-        return text
+        return text;
     }
 
-    // Form Display Controller
+    // Form Save Controller class
+    // In charge of saving form and control auto-saving function
     var FormSaveController = function () {
+        this.ref; // Database reference that will be set in the main program
+        // store the needed UI components as constants
         this.saveButton = $(".form-save-button");
         this.activateButton = $(".form-activate-button");
         this.additionalInfo = $("#additional-info");
-        this.enabledWarning = false;
+        this.enabledWarning = false; // specify if it displays warning when leaving this page
+        // Add a on click event listener to the save button UI element
+        // trigger to save the entire form
         this.saveButton.on("click.save-form", {
-            controller: this
+            controller: this // bind this controller to the event
         }, function (event) {
             var saveController = event.data.controller;
 
             saveController.saveForm();
         });
     }
+    // Method to save the current form to database
     FormSaveController.prototype.saveForm = function () {
-        var jsonObject = DynamicForm.formSet.toJSONObject();
+        // get JSON object of the form object by using FormObjectController
+        var jsonObject = DynamicForm.formObjectController.getJSONFromForm();
 
+        // update isActivated attribute of the JSON object
         jsonObject.isActivated = this.activateButton.find('input[type="checkbox"]').prop("checked");
         jsonObject.lastModified = $.now();
         var date = DynamicForm.toISODate(jsonObject.lastModified);
+
+        // Store the form record in database
         forms[formID] = jsonObject;
-        ref.set(forms);
+        this.ref.set(forms);
+        // display last modified time on screen
         this.additionalInfo.find(".last-modified .modified-date").text(date);
+        // Disable the warning of auto-saving detection
         this.disableSaveWarning();
     }
+    // Method that in charge of backup form in the browser local storage
     FormSaveController.prototype.backupForm = function (form) {
-        var jsonObject = DynamicForm.formSet.toJSONObject();
+        // create a JSON object as shown above but to store in local storage
+        var jsonObject = DynamicForm.formObjectController.getJSONFromForm();
 
         jsonObject.isActivated = this.activateButton.find('input[type="checkbox"]').prop("checked");
         jsonObject.lastModified = $.now();
         var date = DynamicForm.toISODate(jsonObject.lastModified);
 
+        // Store the form JSON object with specific community ID as a key
         if (DynamicForm.backupList[communityID] == undefined) {
             DynamicForm.backupList[communityID] = {};
         }
@@ -102,6 +123,7 @@ var DynamicForm = function () {
         DynamicForm.backupList[communityID][formID] = jsonObject;
         localStorage["community-form-backup"] = JSON.stringify(DynamicForm.backupList);
     }
+    // Method that enables warning when user leaving page without saving the form
     FormSaveController.prototype.enableSaveWarning = function () {
         if (!this.enabledWarning) {
             this.enabledWarning = true;
@@ -111,13 +133,15 @@ var DynamicForm = function () {
             this.enableAutoSaving();
         }
     }
+    // Method that disable warning when user saved the form in database
     FormSaveController.prototype.disableSaveWarning = function () {
         if (this.enabledWarning) {
             this.enabledWarning = false;
             $(window).off("beforeunload.save-warning");
-            this.disableAutoSaving();
+            this.disableAutoSaving(); // also disable the auto-saving
         }
     }
+    // Method that enables auto-saving to save form in the local storage with a 5000 miliseconds interval
     FormSaveController.prototype.enableAutoSaving = function () {
         const interval = 5000;
 
@@ -125,16 +149,22 @@ var DynamicForm = function () {
             DynamicForm.formSaveController.backupForm();
         }, interval)
     }
+    // Method that disables auto-saving 
     FormSaveController.prototype.disableAutoSaving = function () {
         window.clearInterval(this.autoSaving);
     }
+    FormSaveController.prototype.setRef = function (ref) {
+        this.ref = ref;
+    }
     this.formSaveController = new FormSaveController();
 
-    // Form Display Controller
+    // Form Edit Controller class
+    // In charge of processing data from JSON object and display form editor on screen  
     var FormEditController = function () {
-        this.formDataObject = {};
+        this.formDataObject = {}; // object that stores all unprocessed data of a form
         this.fieldTypes = {};
         this.displayForm = $(".form-container");
+        // list to convert field type name to field class name 
         this.fieldTypes = {
             text_label: "Label",
             text_box: "TextField",
@@ -152,17 +182,22 @@ var DynamicForm = function () {
             phone_number: "PhoneNumber"
         }
     }
+    // Method to start processing data and display the form editor on screen
     FormEditController.prototype.loadFormFromDataObject = function () {
-        this.displayForm.empty();
-
-        // for (var i = 0; i < this.formDataObject.formSet.length; i++) {
+        this.displayForm.empty(); // clear the custom form editor
         var formJSONObject = this.formDataObject;
+
+        // before loading the form, compare the lastModified time between the database record and backup record
+        // if database record's lastModified time exceeds backup record's time, nothing happen
+        // if backup record's lastModified time exceeds backup record's time, meaning that browser might crashed
+        // then ask if the user would like to recover from the backup record
         try {
             if (DynamicForm.backupList[communityID][formID].lastModified > formJSONObject.lastModified) {
                 var wantRecorver = window.confirm("We have detected there was a backup available from the last crash.\nWould you like to recover it?");
 
                 if (wantRecorver) {
                     var formDataObject = DynamicForm.backupList[communityID][formID];
+
                     formDataObject.lastModified = formDataObject.lastModified;
                     this.setFormDataObject(formDataObject);
                     this.loadFormFromDataObject();
@@ -172,48 +207,56 @@ var DynamicForm = function () {
         } catch (error) {
 
         }
+
+        // extract data from the JSON object
         var memberType = formJSONObject.memberType;
-        var form = new DynamicForm.Form(memberType);
+        var form = new DynamicForm.Form(memberType); // new a form object
         var date = DynamicForm.toISODate(formJSONObject.lastModified);
         try {
+            // update last modified time on screen
             DynamicForm.formSaveController.additionalInfo.find(".last-modified .modified-date").text(date);
         } catch (error) {
 
         }
-
+        // activates the activate button when the form is activated
         DynamicForm.formSaveController.activateButton.find('input[type="checkbox"]').prop({
             checked: formJSONObject.isActivated
         });
-        DynamicForm.formSet.addForm(form);
+        DynamicForm.formObjectController.setForm(form); // add form to the FormObjectController
 
+        // loop through the field set of the form object and create the field object
         for (var fieldIndex = 0; fieldIndex < formJSONObject.fieldSet.length; fieldIndex++) {
+            // extracts useful data from the JSON object
             var fieldJSONObject = formJSONObject.fieldSet[fieldIndex];
             var fieldType = fieldJSONObject.type;
             var fieldData = fieldJSONObject.data;
             var fieldLabel = fieldData.label;
-            var field = new DynamicForm[this.fieldTypes[fieldType]](fieldLabel, fieldData);
-            var fieldDOM = field.toFieldDOM().appendTo(form.dom);
+            var field = new DynamicForm[this.fieldTypes[fieldType]](fieldLabel, fieldData); // new a field object
+            // append the generated field UI element to the form element
+            var fieldDOM = field.toFieldDOM().appendTo(form.dom); 
 
-            field.setDOM(fieldDOM);
+            field.setDOM(fieldDOM); // bind the UI element back to the field object
             field.doSave(false);
-            form.addField(field, false);
+            form.addField(field, false); // add the field to the form object
         }
-        // }
     }
     FormEditController.prototype.setFormDataObject = function (formDataObject) {
         this.formDataObject = formDataObject;
     }
     this.formController = new FormEditController();
 
-    // Available Item Set
+    // Available Item Set class
+    // Enables user to add field by UI drag and drop function
     var AvailableItemSet = function () {
-        this.itemSet = [];
+        this.itemSet = []; // variable that stores all available fields
         this.itemList = $("#available-item-list");
         $(".back-button").on("click.back-to-list", function () {
-            window.location.href = "form-list.html?communityID=" + communityID;
+            window.location.replace("form-list.html?communityID=" + communityID);
         });
 
+        // Method to create a new available field with category
         this.addItem = function (item, category) {
+            //If the specific category does not exist, create a new one on screen
             var targetCategory = $(".available-item-category .available-item-category-label[data-category='" + category + "']");
 
             if (targetCategory.length === 0) {
@@ -228,6 +271,8 @@ var DynamicForm = function () {
             var fieldDOM = this.itemSet[index].toFieldDOM().attr({
                 "data-id": index
             });
+            // Connect the available field list with the form field list
+            // Setting up the drag and drop function
             targetCategory.closest(".available-item-category").find(".available-item-list").append(fieldDOM)
                 .sortable({
                     helper: "clone",
@@ -240,6 +285,8 @@ var DynamicForm = function () {
                     stop: function (event, ui) {
                         $(this).sortable("cancel");
                     },
+                    // when a field is dropped onto the form field list
+                    // clone the desired field object from this list to that list
                     remove: function (event, ui) {
                         var id = ui.item.attr("data-id");
                         var field = DynamicForm.availableItemSet.getItemById(id);
@@ -247,7 +294,7 @@ var DynamicForm = function () {
                         var clonedDOM = clonedField.toFieldDOM()
                             .insertAfter(ui.item);
                         clonedField.setDOM(clonedDOM);
-                        DynamicForm.formSet.waitForProcessedField = clonedField;
+                        DynamicForm.formObjectController.waitForProcessedField = clonedField;
 
                         return clonedDOM;
                     }
@@ -270,9 +317,10 @@ var DynamicForm = function () {
     }
     this.availableItemSet = new AvailableItemSet();
 
-    // Form Set
-    var FormSet = function () {
-        this.formSet = [];
+    // Form Object Controller class
+    // In charge of controlling the form object
+    var FormObjectController = function () {
+        this.editingForm = {}; // variable that sotres the form object
         this.formList = $("#form-container-list");
         this.currentForm;
         this.previousEditingField;
@@ -283,10 +331,11 @@ var DynamicForm = function () {
             containment: "#dynamic_form-tab-controls",
             items: ".ui-tabs-tab",
             stop: function () {
-                DynamicForm.formSet.tabContainer.tabs("refresh");
+                DynamicForm.formObjectController.tabContainer.tabs("refresh");
             }
         });
 
+        // Method to open a field's control panel
         this.enableFieldEdition = function (field, form) {
             try {
                 this.previousEditingField.dom.removeClass("active");
@@ -299,48 +348,25 @@ var DynamicForm = function () {
             this.previousEditingField = field;
         }
     };
-    FormSet.prototype.isExist = function (memberType) {
-        for (var i = 0; i < this.formSet.length; i++) {
-            try {
-                if (this.formSet[i].memberType === memberType) {
-                    return true;
-                }
-            } catch (error) {
+    // Method to set this controller a target form and display on screen
+    FormObjectController.prototype.setForm = function (form) {
+        var index = this.editingForm.length;
+        this.editingForm = form;
 
-            }
-        }
-        return false;
-    }
-    FormSet.prototype.addForm = function (form) {
-        if (this.isExist(form.memberType)) {
-            window.alert("Sorry, the member type has been existed.\nPlease try another title.");
-            return;
-        }
-
-        var index = this.formSet.length;
-        this.formSet[index] = form;
-
-        var deleteButton = $('<i class="material-icons">close</i>');
-        deleteButton.on("click.delete-form", {
-            form: this.formSet[index]
-        }, function (event) {
-            var form = event.data.form;
-            var confirmResult = window.confirm("Are you sure you want to delete this?\nPlease note that this action cannot be undone.");
-
-            if (confirmResult === true) {
-                DynamicForm.formSet.removeForm(form);
-            }
-        });
+        // Display the form on screen
         var generatedID = DynamicForm.generateID(10, "form-");
         var tabLabel = $('<li data-form_id="' + index + '"></li>');
+
         tabLabel.append('<a href="#' + generatedID + '">' + form.memberType + '</a>');
-        tabLabel.append(deleteButton);
         this.formList.find("#dynamic_form-tab-controls").prepend(tabLabel);
+
+        // create a form UI element
         var createdForm = $('<div class="form-container">').attr({
             id: generatedID,
             "data-form_id": index
         });
         this.formList.find("#dynamic_form-tab-controls").after(createdForm);
+        // make the fields in the form sortable
         createdForm.sortable({
             tolerance: 'pointer',
             placeholder: "item-drop-position",
@@ -356,59 +382,46 @@ var DynamicForm = function () {
                     }
                 }
             },
+            // When the order of fields is changed, enable auto-saving with leaving warning
             sort: function (event, ui) {
                 DynamicForm.formSaveController.enableSaveWarning();
             },
+            // When an available field is dropped on this, add the field to this form object
             receive: function (event, ui) {
                 var formID = $(this).attr("data-form_id");
-                var form = DynamicForm.formSet.getFormByID(formID);
-                var field = DynamicForm.formSet.waitForProcessedField;
+                var form = DynamicForm.formObjectController.getForm();
+                var field = DynamicForm.formObjectController.waitForProcessedField;
                 form.addField(field);
             }
         });
-        this.formSet[index].setDOM(createdForm);
+        // bind the created form UI elements to the form object
+        this.editingForm.setDOM(createdForm);
         this.refreshTabs();
     }
-    FormSet.prototype.removeForm = function (form) {
-        var index = this.formSet.indexOf(form);
-        this.removeFormByID(index);
-    }
-    FormSet.prototype.removeFormByID = function (id) {
-        if (id != -1) {
-            this.formList.find('#dynamic_form-tab-controls li[data-form_id="' + id + '"]').remove();
-            this.formSet[id].dom.remove();
-            this.refreshTabs();
-            delete this.formSet[id];
-        }
-    }
-    FormSet.prototype.refreshTabs = function () {
+    // refresh the field list to ensure that its fields' position are correct
+    FormObjectController.prototype.refreshTabs = function () {
         this.formList.tabs("refresh");
         this.formList.tabs("option", "active", 0);
     }
-    FormSet.prototype.getFormByID = function (id) {
-        return this.formSet[id];
+    FormObjectController.prototype.getForm = function () {
+        return this.editingForm;
     }
-    FormSet.prototype.getIdByForm = function (form) {
-        return this.formSet.indexOf(form);
+    FormObjectController.prototype.getIdByForm = function (form) {
+        return this.editingForm;
     }
-    FormSet.prototype.toJSONObject = function () {
+    // Generate and return a JSON Object of the form object
+    FormObjectController.prototype.getJSONFromForm = function () {
         var jsonObject = {};
+        var form = this.editingForm;
 
-        // for (var i = 0; i < this.formSet.length; i++) {
-        var form = this.formSet[0];
-        // var index = jsonObject.formSet.length;
-        // if (this.formSet[0] === undefined) {
-        //     continue;
-        // }
-
-        jsonObject = this.formSet[0].toJSONObject();
-        // }
+        jsonObject = this.editingForm.toJSONObject();
 
         return jsonObject;
     }
-    this.formSet = new FormSet();
+    this.formObjectController = new FormObjectController();
 
-    // Preview Form Controller
+    // Preview Form Controller class
+    // In charge of performing preview function
     var PreviewFormController = function () {
         this.previewButton = $(".dynamic-form-button.form-preview-button");
 
@@ -417,7 +430,7 @@ var DynamicForm = function () {
         });
     }
     PreviewFormController.prototype.previewCurrentForm = function () {
-        var formID = DynamicForm.formSet.formList.tabs("instance").active.attr("data-form_id");
+        var formID = DynamicForm.formObjectController.formList.tabs("instance").active.attr("data-form_id");
 
         if (formID != undefined) {
             this.previewFormByID(formID);
@@ -433,7 +446,7 @@ var DynamicForm = function () {
         }
     }
     PreviewFormController.prototype.previewFormByID = function (id) {
-        var form = DynamicForm.formSet.getFormByID(id);
+        var form = DynamicForm.formObjectController.getForm();
 
         if (this.dom === undefined) {
             this.dom = $('<div class="preview-form-container">').dialog({
@@ -497,7 +510,7 @@ var DynamicForm = function () {
         }
         this.buildPanelContent = function (panelContent, form) {
             var content = panelContent.toPanelDOM();
-            var formID = DynamicForm.formSet.getIdByForm(form);
+            var formID = DynamicForm.formObjectController.getIdByForm(form);
             var fieldID = -1;
             try {
                 fieldID = form.getIdByField(panelContent);
@@ -708,7 +721,7 @@ var DynamicForm = function () {
                 var form = event.data.form;
                 var field = event.data.field;
 
-                DynamicForm.formSet.enableFieldEdition(field, form);
+                DynamicForm.formObjectController.enableFieldEdition(field, form);
             });
             this.fieldSet[index].dom.find(".form-edit-control.delete").on("click.form-delete", {
                 form: this,
@@ -834,7 +847,7 @@ var DynamicForm = function () {
         var saveButton = $('<input type="button" class="control-save" value="Save">');
         saveButton.on("click.save-data", function (event) {
             var formID = DynamicForm.controlPanel.panel.find(".tab-control").attr("data-form_id");
-            var form = DynamicForm.formSet.getFormByID(formID);
+            var form = DynamicForm.formObjectController.getForm();
             var fieldID = DynamicForm.controlPanel.panel.find(".tab-control").attr("data-field_id");
             var field = form.getFieldById(fieldID);
             var optionList = DynamicForm.controlPanel.panel.find(".field-option-list input");
@@ -1672,20 +1685,21 @@ DynamicForm.availableItemSet.enableItemList();
 
 var communityID = $.urlParam("communityID");
 var formID = $.urlParam("form-id");
+// Declare a database refence connected to the specific path of table
 var ref = firebase.database().ref("Community/" + communityID + "/FormSet");
 var formDataObject = {};
 var forms = [];
 
 try {
+    DynamicForm.formSaveController.setRef(ref);
     ref.once("value").then(function (data) {
         if (data.val() != null) {
-            forms = data.val();
-            console.log(forms, formID)
-            formDataObject = forms[formID];
+            form = data.val();
+            formDataObject = form[formID];
             DynamicForm.formController.setFormDataObject(formDataObject);
             DynamicForm.formController.loadFormFromDataObject();
         }
     });
 } catch (error) {
-
+    console.log(error)
 }

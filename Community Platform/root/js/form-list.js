@@ -157,6 +157,18 @@ var FormList = function () {
     // this.EmptyForm.constructor = this.EmptyForm;
     // this.EmptyForm = new this.EmptyForm()
 };
+FormList.prototype.isExist = function (memberType) {
+    for (var i = 0; i < this.formSet.length; i++) {
+        try {
+            if (this.formSet[i].memberType === memberType) {
+                return true;
+            }
+        } catch (error) {
+
+        }
+    }
+    return false;
+}
 FormList.prototype.addForm = function (form) {
     var memberType = form.getMemberType();
     var fieldSet = form.getFieldSet();
