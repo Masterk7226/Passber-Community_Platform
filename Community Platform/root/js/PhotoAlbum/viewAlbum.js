@@ -233,6 +233,11 @@ PhotoAlbum.prototype.displayAlbums = function(key, albumName, creator, creatorPh
   keyinput.setAttribute('type', 'hidden');
   keyinput.setAttribute('name', 'view');
   keyinput.setAttribute('value', key);
+    
+  var communityinput = document.createElement('input');
+  communityinput.setAttribute('type', 'hidden');
+  communityinput.setAttribute('name', 'communityID');
+  communityinput.setAttribute('value', this.communityId);
 
   //info from the album
   var descInfo = document.createElement('p');
@@ -251,6 +256,7 @@ PhotoAlbum.prototype.displayAlbums = function(key, albumName, creator, creatorPh
   albumElement.appendChild(thumbnailContainer);
   albumElement.appendChild(desc);
   albumElement.appendChild(keyinput);
+  albumElement.appendChild(communityinput);
   // Show the card fading-in and scroll to view the new message.
   setTimeout(function() {
     div.classList.add('visible')

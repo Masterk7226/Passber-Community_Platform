@@ -80,7 +80,7 @@ PhotoAlbum.prototype.loadMessages = function() {
   var url = new URL(url_string);
   var viewId = url.searchParams.get("view");
   // Reference to the /messages/ database path.
-  this.messagesRef = this.database.ref('Platform/ABCClub/PhotoAlbum/' + viewId + '/messages');
+  this.messagesRef = this.database.ref('Community/' + this.communityID + '/PhotoAlbum/' + viewId + '/messages');
   // Make sure we remove all previous listeners.
   this.messagesRef.off();
 
