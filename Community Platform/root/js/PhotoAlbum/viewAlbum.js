@@ -91,6 +91,10 @@ PhotoAlbum.prototype.setImageUrl = function(imageUri, imgElement) {
 };
 
 PhotoAlbum.prototype.redirectCreate = function() {
+  var communityID = url.searchParams.get("communityID");
+   if (communityID == null) {
+    window.location.replace("../../404.html");
+  }
  window.location.replace("https://passber-community-platform.firebaseapp.com/html/PhotoAlbum/album_create.html?" + communityID);
 };
 
