@@ -1,6 +1,14 @@
+html {
+ background-image: url(../../img/background-office-10.jpg);
+}
 body,html{
  height: 100%;
  min-width: 800px;
+}
+.geomapping{
+ top: 10%;
+ height: 80%;
+ width: 100%;
 }
 .selection{
  width: 100%;
