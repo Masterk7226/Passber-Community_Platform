@@ -22,10 +22,12 @@ function GEOMAP(mapID){
  var map = null;
  var geodiv = null;
  var geopopup = null;
+ // view object of the map to control UI
  var view = new ol.View({
   center: new ol.proj.fromLonLat([114.1,22.30]),
   zoom: 10
  });
+ // Initialize Layers of the map
  this.initLayer = function(){
   vectorSource = new ol.source.Vector({
   });
@@ -33,9 +35,11 @@ function GEOMAP(mapID){
    source: vectorSource
   });
  }
+ // Initialize div element
  this.initDiv = function(div){
   geodiv = div;
  }
+ // Initialize map object
  this.initMap = function(){
    map = new ol.Map({
     controls: ol.control.defaults({
@@ -53,6 +57,7 @@ function GEOMAP(mapID){
    view: view
   });
  }
+ // set Icon src
  this.setIcon = function(iconLink){
   icon = new ol.style.Icon({
    anchor: [0.5, 0.5],
@@ -64,16 +69,22 @@ function GEOMAP(mapID){
    image: icon
   });
  }
+ // Add Feature into Vector Layer
  this.addFeature = function(data){
   var div = geodiv.createDiv(data);
+  // Define the feature object
   var iconFeature = new ol.Feature({
    geometry: this.getPointFromString([data.longtitue, data.latitue]),
    data: data,
    div: div
   });
+  // set icon style
   iconFeature.setStyle(iconStyle);
+  // add into the feature array
   iconFeatures.push(iconFeature);
+  // add into the vector layer
   vectorSource.addFeature(iconFeature);
+  // Set onclick
   div.click(function(){
    var coordinates = iconFeature.getGeometry().getCoordinates();
    popup.setPosition(coordinates);
@@ -91,8 +102,10 @@ function GEOMAP(mapID){
    $('.geo-div-focus').removeClass('geo-div-focus');
    $(this).addClass('geo-div-focus');
   });
+  // return the div element to the html
   return div;
  }
+ // set the popup settings
  this.setPopup = function(id, obj){
   popupElement = document.getElementById(id);
   geopopup = obj;
@@ -103,6 +116,8 @@ function GEOMAP(mapID){
    offset: [0, -50]
   });
    map.addOverlay(popup);
+   // Close when click on other or no feature
+   // Popup when click on a feature
    map.on('click', function(evt){
     var feature = this.forEachFeatureAtPixel(evt.pixel,
      function(feature){
@@ -128,6 +143,7 @@ function GEOMAP(mapID){
     $(popupElement).popover('destroy');
    }
   });
+  // Close the popup when move the map
   map.on('pointermove', function(e) {
    if(e.dragging){
     $(popupElement).popover('destroy');
@@ -138,13 +154,17 @@ function GEOMAP(mapID){
    this.getTarget().style.cursor = hit ? 'pointer' : '';
   });
  }
+ // Hide the feature when needed
  this.hideFeatureByIndex = function(index){
   this.hideFeature(iconFeatures[index]);
  }
+ // Show the feature when needed
  this.showFeatureByIndex = function(index){
   this.showFeature(iconFeatures[index]);
  }
+ // Hide the feature when needed
  this.hideFeature = function(feature){ feature.setStyle(new ol.style.Style());}
+ // Show the feature when needed
  this.showFeature = function(feature){ feature.setStyle(new ol.style.Style({image: icon}));}
  this.getFeatures = function(){ return iconFeatures;}
  this.getMap = function(){ return map;}
@@ -156,6 +176,7 @@ function GEOMAP(mapID){
   return new ol.geom.Point(ol.proj.fromLonLat([parseFloat(lonLat[0]),
    parseFloat(lonLat[1])]));
  }
+ // To control the UI
  this.zoneFocus = function(topLeft, bottomRight){
   var center = {
    longtitude: 0,

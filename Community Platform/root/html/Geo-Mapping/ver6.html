@@ -184,40 +184,48 @@
  </body>
  <script type="text/javascript" src="../../js/Basic.js"></script>
  <script type="text/javascript">
+  // Initialize the area options
   $.each(mapZone, function(key, val){
    $.each(val, function(key2, val){
     $('#form_district').append('<option value="'+key2+'">'+val.name+'</option>');
    })
   });
+  // Initialize the map object
+  // build the map object with div id
   var geomap = new GEOMAP('map');
+  // set the icon src
   geomap.setIcon('new_pin.png');
+  // set the div factory
   geomap.initDiv(new GEODIV());
+  // initialize the vector layer of the map objcet
   geomap.initLayer();
+  // initialize the ol-map object of the map
   geomap.initMap();
+  // initialize the popup element with the icon src
   geomap.setPopup('popup', new GEOPOPUP('new_pin.png'));
   var geoList = [];
   var sampleData = [];
+  // get json from the 
   getMAPJSON(function(childData){
+   // Run for each json
    var feeString = childData.val().Fee;
-   feeArray = feeString.split("Members: ");
    var fees = [];
-   for(var i=1; i<feeArray.length; i++){
-    var fee = feeArray[i].split(" Fee: ");
-	   var obj = {};
-	   obj[fee[0]] = fee[1];
+   for(var i=0; i<feeString.length; i++){
+    var memType = Object.keys(feeString[i]);
+    obj[memType] = Object.values(feeString[i]);
     fees.push(obj);
    }
    var data = new DataSet({
-    "start":childData.val().DoS,
-    "end":childData.val().DoE,
-    "address":childData.val().Address,
-    "name":childData.val().Name,
+    "start":childData.val().start,
+    "end":childData.val().end,
+    "address":childData.val().address,
+    "name":childData.val().name,
     "stat":"upcoming",
-    "imgsrc":childData.val().Logo,
-    "content":childData.val().Content,
+    "imgsrc":childData.val().imgsrc,
+    "content":childData.val().content,
     "deadline":"",
-    "longtitue":childData.val().Long,
-    "latitue":childData.val().Lat,
+    "longtitue":childData.val().longtitue,
+    "latitue":childData.val().latitue,
     "page":"about:blank",
     "fee":fees
    });
