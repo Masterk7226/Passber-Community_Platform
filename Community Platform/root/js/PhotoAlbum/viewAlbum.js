@@ -9,8 +9,6 @@ function PhotoAlbum() {
    if (communityID == null) {
     window.location.replace("../../404.html");
   }
-  var create = document.getElementById('create');
-  create.id = communityID;
 
   // Shortcuts to DOM Elements.
   //Album element
@@ -180,6 +178,12 @@ PhotoAlbum.PHOTO_TEMPLATE =
   '</div>' +
   '</form>' +
   '</div>';
+
+PhotoAlbum.prototype.insertButton = function(communityId){
+  var createButton = document.createElement('button');
+  createButton.setAttribute("id", communityId);
+  createButton.innerHtml = "Create Album";
+}
 
 // Displays a Message in the UI.
 PhotoAlbum.prototype.displayAlbums = function(key, albumName, creator, creatorPhotoUrl) {
