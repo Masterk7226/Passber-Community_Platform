@@ -323,6 +323,45 @@
         //     });
         // }).key;
 
+        //Create the Event Group (Instant Message)
+        var details = createDetails();
+        if (details != null) {
+          createMessages(details);
+        }
+
+        function createDetails() {
+          var key = "Null";
+          var name = $(".event-name").val();
+          var refs = firebase.database().ref("InstantMessage/Details/Event");
+
+          var strings = {
+              Members: {
+                "-001M": {
+                  email: firebase.auth().currentUser.email // Get from where
+                }
+              },
+              Name: name,
+              Role: {
+                "-001R": {
+                  email: firebase.auth().currentUser.email
+                }
+              }
+            }
+            key = refs.push(strings);
+          return key;
+          }
+
+        function createMessages(details) {
+          var refe = firebase.database().ref("InstantMessage/Messages/Event");
+          var Msgstrings = {
+            Message: {
+              name: "New Group Created."
+            },
+            Name: details.key
+          };
+          var checking = ref.push(Msgstrings);
+        }
+
         ref.push(event, function () {
             window.location.href = "manage-community.html?communityID=" + communityID;
         });
