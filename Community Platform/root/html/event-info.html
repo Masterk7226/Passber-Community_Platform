@@ -366,6 +366,7 @@
     var eventRef = communityRef.child("/EventSet/" + eventID);
     var ref = eventRef.child("/EventRecord");
     var formRef = communityRef.child("/Event/FormSet");
+    var isOrganizer = false;
     var loadMemberTypeList = function () {
         eventRef.on("value", function (data) {
             var event = data.val()
@@ -383,7 +384,7 @@
             var eventRecord = data.val();
             var joinButton = $("#join-event");
 
-            if (eventRecord == null) {
+            if (eventRecord == null && !isOrganizer) {
                 communityRef.child("MemberRecord/TestMemberID/memberTypeID").once("value", function (data) {
                     var memberTypeID = data.val();
 
@@ -459,7 +460,10 @@
     $("#back-button").on("click.back-to-privious-page", function () {
         window.location.replace("community-info.html?communityID=" + communityID);
     });
-    loadMemberTypeList();
+    firebase.auth().onAuthStateChanged(function (user) {
+        window.user = user;
+        loadMemberTypeList();
+    });
 </script>
 
 </html>

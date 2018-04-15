@@ -119,11 +119,13 @@
             margin-bottom: 5px;
         }
 
-        #join-community {
+        #join-community,
+        #manage-community {
             float: right;
         }
 
-        #join-community.disabled {
+        #join-community.disabled,
+        #manage-community.disabled {
             display: none;
         }
 
@@ -305,6 +307,7 @@
                         <pre></pre>
                     </div>
                     <button id="join-community" class="disabled">Register</button>
+                    <button id="manage-community" class="disabled">Manage</button>
                 </fieldset>
 
                 <fieldset>
@@ -343,11 +346,26 @@
     var ref = communityRef.child("/MemberRecord");
     var eventRef = communityRef.child("/EventSet");
     var formRef = communityRef.child("/FormSet");
+    var organizerID;
     var isMember = false;
+    var isOrganizer = false;
     var loadMemberTypeList = function () {
         communityRef.on("value", function (data) {
             var community = data.val()
+            window.organizerID = community.organizerID;
 
+            try {
+                console.log(user.uid, organizerID)
+                if (user.uid == organizerID) {
+                    $("#manage-community").removeClass("disabled")
+                        .on("click", function () {
+                            window.location.replace("manage-community.html?communityID=" + communityID);
+                        });
+                    isMember = true;
+                }
+            } catch (error) {
+
+            }
             $(".community-name span").text(community.name);
             $(".community-address span").text(community.address);
             $(".community-phone span").text(community.phone);
@@ -361,7 +379,8 @@
             var memberRecord = data.val();
             var joinButton = $("#join-community");
 
-            if (memberRecord == null) {
+            console.log(user.uid == organizerID)
+            if (memberRecord == null && !isOrganizer) {
                 isMember = false;
                 joinButton.removeClass("disabled");
                 joinButton.on("click.join-community", function () {
@@ -374,42 +393,11 @@
             joinButton.off("click.join-community");
         }
 
-        // function updateMemberTypeList(data) {
-        //     var memberTypeObjectSet = data.val();
-        //     var memberTypeList = $("#member-type-list");
-        //     var formSet = [];
-
-        //     memberTypeList.children().remove();
-        //     for (var key = [] in memberTypeObjectSet) {
-        //         var memberTypeObject = memberTypeObjectSet[key];
-        //         var memberType = $('<div class="member-type-item">').attr({
-        //             "data-id": key
-        //         });
-        //         console.log(key)
-        //         var memberTypeName = $('<div class="member-type-name">').text(memberTypeObject.name);
-        //         var formSelection = $('<select class="form-selection">').append('<option value="-1">None</option>')
-        //             .attr({
-        //                 "data-selected": memberTypeObject.selectedForm
-        //             });
-        //         formSelection.on("change", function () {
-        //             isChanged = $(this).hasClass("changed");
-
-        //             if (!isChanged) {
-        //                 $(this).addClass("changed");
-        //             }
-        //         });
-
-        //         memberType.append(memberTypeName).append(formSelection);
-        //         memberTypeList.append(memberType);
-        //     }
-
-        //     formRef.once("value", function (data) {
-        //         updateFormList(data)
-        //     });
-        // }
-        ref.child("TestMemberID").on("value", function (data) {
-            updateMemberStatus(data);
-        });
+        if (user != null) {
+            ref.child(user.uid).on("value", function (data) {
+                updateMemberStatus(data);
+            });
+        }
         ref.on("child_changed", function () {
 
         });
@@ -486,7 +474,10 @@
     $("#back-button").on("click.back-to-privious-page", function () {
         window.location.href = "all-community-list.html";
     });
-    loadMemberTypeList();
+    firebase.auth().onAuthStateChanged(function (user) {
+        window.user = user;
+        loadMemberTypeList();
+    });
 </script>
 
 </html>
