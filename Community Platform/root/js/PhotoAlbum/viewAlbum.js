@@ -200,7 +200,6 @@ PhotoAlbum.prototype.displayAlbums = function(key, albumName, creator, creatorPh
   var thumbnailRef = this.database.ref('Community/' + communityID + '/PhotoAlbum/' + key + '/images');
 
   var result;
-  var resultRef;
 
   var div = document.getElementById(key);
 
