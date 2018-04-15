@@ -90,7 +90,7 @@ PhotoAlbum.prototype.setImageUrl = function(imageUri, imgElement) {
 };
 
 PhotoAlbum.prototype.redirectCreate = function() {
- window.location.replace("https://passber-community-platform.firebaseapp.com/html/PhotoAlbum/album_create.html?" + this.communityID);
+ window.location.replace("https://passber-community-platform.firebaseapp.com/html/PhotoAlbum/album_create.html?communityID=" + this.communityID);
 };
 
 // Signs-in Friendly Chat.
