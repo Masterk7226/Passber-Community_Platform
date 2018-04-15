@@ -151,7 +151,7 @@ function onAuthStateChanged() {
             alert('Welcome back to Passber!');
             window.location.reload();
         } else {
-            console.log(123)
+            console.log(123);
             msgChange($('#div-login-msg'), $('#icon-login-msg'), $('#text-login-msg'), "error", "glyphicon-remove", "Login failed.");
         }
 

@@ -136,6 +136,10 @@
         fieldset {
             margin-bottom: 10px;
         }
+
+        #enter-album {
+            margin-right: 25px;
+        }
     </style>
 </head>
 <script src="../js/login.js"></script>
@@ -316,6 +320,11 @@
                     <div class="community-description">Description:
                         <pre></pre>
                     </div>
+                    <a id="enter-album" href="#">
+                        <button>
+                            <i class="material-icons">photo_library</i>Enter Album
+                        </button>
+                    </a>
                     <button id="join-community" class="disabled">Register</button>
                     <button id="manage-community" class="disabled">Manage</button>
                 </fieldset>
@@ -489,6 +498,10 @@
     firebase.auth().onAuthStateChanged(function (user) {
         window.user = user;
         loadMemberTypeList();
+    });
+
+    $('#enter-album').on("click.enter-album", function () {
+        window.location.replace("PhotoAlbum/album_view.html?communityID=" + communityID);
     });
 </script>
 

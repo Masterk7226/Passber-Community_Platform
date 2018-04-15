@@ -1,5 +1,7 @@
 #body-container {
-    background-image: url("../img/background-office-10.jpg");
+    background-image: url(../img/background-office-10.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 
 .content-container {
@@ -28,6 +30,6 @@
     opacity: 1;
 }
 
-.btn.btn-link-3{
+.btn.btn-link-3 {
     margin: 0 0;
 }

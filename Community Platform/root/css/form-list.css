@@ -84,6 +84,8 @@ body {
     width: 100vw;
     background-color: #F1F1F1;
     background-image: url("../img/background_office-form.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
     overflow-x: hidden;
     -webkit-font-smoothing: subpixel-antialiased;
     font-family: 'Open Sans', sans-serif;

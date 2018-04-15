@@ -1,28 +1,17 @@
 {
-    "database": {
-      "rules": "database.rules.json"
-    },
-    "hosting": {
-      "public": "root",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "rewrites": [
-            { "source": "/ABCClub",
-              "destination": "/ABCClub.html"
-            },
-            { "source": "/login",
-              "destination": "/index.html"
-            },
-            { "source": "/InstantMessage/*",
-              "destination": "/InstantMessage/InstantMessage.html"
-            }
-          ]
-    },
-    "storage": {
-      "rules": "storage.rules"
-    }
+  "database": {
+    "rules": "database.rules.json"
+  },
+  "hosting": {
+    "public": "root",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": []
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
-  
+}

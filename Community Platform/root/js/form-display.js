@@ -1,14 +1,22 @@
 // Form Display
 // By MAK Kai Chung
 
-// a package for Dynamic Form
+// Notes: 
+// 1. Form Display & Dynamic Form use the same engine
+// 2. something wrapped by $() means getting or creating the UI components / elements from the runing html
+
+// Create a package for Dynamic Form
 var DynamicForm = function () {
-    // Method to preserve the escape string from a text value
-    this.preserveEscapeString = function (text) {
-        return text.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
+    // Extract the auto-saving back up forms from the browser local storage
+    // Local storage  will not be deleted even when the browser closed unless user delete manually
+    this.backupList = {};
+    try {
+        this.backupList = JSON.parse(localStorage["community-form-backup"]);
+    } catch (error) {
+
     }
 
-    // Generate random ID for UI elements
+    // Global method to generate random ID for UI elements
     this.generateID = function (length, text) {
         if (text === undefined) {
             text = "";
@@ -23,10 +31,28 @@ var DynamicForm = function () {
             return generateID(length);
         }
 
-        return text
+        return text;
     }
 
-    // Generate random name for UI elements
+    // Global method to convert miliseconds to readable ISO date format
+    this.toISODate = function (ms) {
+        if (isNaN(ms)) {
+            return ["0000", "00", "00"].join("-") + " " + ["00", "00", "00"].join(":");
+        }
+
+        var date = new Date(ms);
+        var year = date.getFullYear()
+        var month = date.getMonth() + 1;
+        var day = date.getDate();
+        var hours = date.getHours();
+        var mins = date.getMinutes();
+        var seconds = date.getSeconds();
+        var ISODate = [date, year, month, day, hours, mins, seconds];
+
+        return [year, month, day].join("-") + " " + [hours, mins, seconds].join(":");
+    }
+
+    // Global method to generate random name for UI elements
     this.generateName = function (length) {
         var text = "";
         var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
@@ -41,6 +67,184 @@ var DynamicForm = function () {
 
         return text;
     }
+
+    // Form Save Controller class
+    // In charge of saving form and control auto-saving function
+    var FormSaveController = function () {
+        this.ref; // Database reference that will be set in the main program
+        // store the needed UI components as constants
+        this.saveButton = $(".form-save-button");
+        this.activateButton = $(".form-activate-button");
+        this.additionalInfo = $("#additional-info");
+        this.enabledWarning = false; // specify if it displays warning when leaving this page
+        // Add a on click event listener to the save button UI element
+        // trigger to save the entire form
+        this.saveButton.on("click.save-form", {
+            controller: this // bind this controller to the event
+        }, function (event) {
+            var saveController = event.data.controller;
+
+            saveController.saveForm();
+        });
+    }
+    // Method to save the current form to database
+    FormSaveController.prototype.saveForm = function () {
+        // get JSON object of the form object by using FormObjectController
+        var jsonObject = DynamicForm.formObjectController.getJSONFromForm();
+
+        // update isActivated attribute of the JSON object
+        jsonObject.isActivated = this.activateButton.find('input[type="checkbox"]').prop("checked");
+        jsonObject.lastModified = $.now();
+        var date = DynamicForm.toISODate(jsonObject.lastModified);
+
+        // Store the form record in database
+        forms[formID] = jsonObject;
+        this.ref.set(forms);
+        // display last modified time on screen
+        this.additionalInfo.find(".last-modified .modified-date").text(date);
+        // Disable the warning of auto-saving detection
+        this.disableSaveWarning();
+    }
+    // Method that in charge of backup form in the browser local storage
+    FormSaveController.prototype.backupForm = function (form) {
+        // create a JSON object as shown above but to store in local storage
+        var jsonObject = DynamicForm.formObjectController.getJSONFromForm();
+
+        jsonObject.isActivated = this.activateButton.find('input[type="checkbox"]').prop("checked");
+        jsonObject.lastModified = $.now();
+        var date = DynamicForm.toISODate(jsonObject.lastModified);
+
+        // Store the form JSON object with specific community ID as a key
+        if (DynamicForm.backupList[communityID] == undefined) {
+            DynamicForm.backupList[communityID] = {};
+        }
+        if (DynamicForm.backupList[communityID][formID] != undefined) {
+            DynamicForm.backupList[communityID] = {};
+        }
+        DynamicForm.backupList[communityID][formID] = jsonObject;
+        localStorage["community-form-backup"] = JSON.stringify(DynamicForm.backupList);
+    }
+    // Method that enables warning when user leaving page without saving the form
+    FormSaveController.prototype.enableSaveWarning = function () {
+        if (!this.enabledWarning) {
+            this.enabledWarning = true;
+            $(window).on("beforeunload.save-warning", function () {
+                return confirm("Are you sure you want to leave without saving?");
+            });
+            this.enableAutoSaving();
+        }
+    }
+    // Method that disable warning when user saved the form in database
+    FormSaveController.prototype.disableSaveWarning = function () {
+        if (this.enabledWarning) {
+            this.enabledWarning = false;
+            $(window).off("beforeunload.save-warning");
+            this.disableAutoSaving(); // also disable the auto-saving
+        }
+    }
+    // Method that enables auto-saving to save form in the local storage with a 5000 miliseconds interval
+    FormSaveController.prototype.enableAutoSaving = function () {
+        const interval = 5000;
+
+        this.autoSaving = window.setInterval(function () {
+            DynamicForm.formSaveController.backupForm();
+        }, interval)
+    }
+    // Method that disables auto-saving 
+    FormSaveController.prototype.disableAutoSaving = function () {
+        window.clearInterval(this.autoSaving);
+    }
+    FormSaveController.prototype.setRef = function (ref) {
+        this.ref = ref;
+    }
+    this.formSaveController = new FormSaveController();
+
+    // Form Edit Controller class
+    // In charge of processing data from JSON object and display form editor on screen  
+    var FormEditController = function () {
+        this.formDataObject = {}; // object that stores all unprocessed data of a form
+        this.fieldTypes = {};
+        this.displayForm = $(".form-container");
+        // list to convert field type name to field class name 
+        this.fieldTypes = {
+            text_label: "Label",
+            text_box: "TextField",
+            number_field: "NumberField",
+            text_area: "TextAreaField",
+            radio_button_group: "RadioButtonGroup",
+            checkbox_group: "CheckboxGroup",
+            drop_down_list: "DropDownList",
+            toggle_button: "ToogleButton",
+            date_time_picker: "DatetimePicker",
+            file_upload: "FileUpload",
+            first_name: "FirstName",
+            last_name: "LastName",
+            email: "Email",
+            phone_number: "PhoneNumber"
+        }
+    }
+    // Method to start processing data and display the form editor on screen
+    FormEditController.prototype.loadFormFromDataObject = function () {
+        this.displayForm.empty(); // clear the custom form editor
+        var formJSONObject = this.formDataObject;
+
+        // before loading the form, compare the lastModified time between the database record and backup record
+        // if database record's lastModified time exceeds backup record's time, nothing happen
+        // if backup record's lastModified time exceeds backup record's time, meaning that browser might crashed
+        // then ask if the user would like to recover from the backup record
+        try {
+            if (DynamicForm.backupList[communityID][formID].lastModified > formJSONObject.lastModified) {
+                var wantRecorver = window.confirm("We have detected there was a backup available from the last crash.\nWould you like to recover it?");
+
+                if (wantRecorver) {
+                    var formDataObject = DynamicForm.backupList[communityID][formID];
+
+                    formDataObject.lastModified = formDataObject.lastModified;
+                    this.setFormDataObject(formDataObject);
+                    this.loadFormFromDataObject();
+                    return;
+                }
+            }
+        } catch (error) {
+
+        }
+
+        // extract data from the JSON object
+        var memberType = formJSONObject.memberType;
+        var form = new DynamicForm.Form(memberType); // new a form object
+        var date = DynamicForm.toISODate(formJSONObject.lastModified);
+        try {
+            // update last modified time on screen
+            DynamicForm.formSaveController.additionalInfo.find(".last-modified .modified-date").text(date);
+        } catch (error) {
+
+        }
+        // activates the activate button when the form is activated
+        DynamicForm.formSaveController.activateButton.find('input[type="checkbox"]').prop({
+            checked: formJSONObject.isActivated
+        });
+        DynamicForm.formObjectController.setForm(form); // add form to the FormObjectController
+
+        // loop through the field set of the form object and create the field object
+        for (var fieldIndex = 0; fieldIndex < formJSONObject.fieldSet.length; fieldIndex++) {
+            // extracts useful data from the JSON object
+            var fieldJSONObject = formJSONObject.fieldSet[fieldIndex];
+            var fieldType = fieldJSONObject.type;
+            var fieldData = fieldJSONObject.data;
+            var fieldLabel = fieldData.label;
+            var field = new DynamicForm[this.fieldTypes[fieldType]](fieldLabel, fieldData); // new a field object
+            // append the generated field UI element to the form element
+            var fieldDOM = field.toFieldDOM().appendTo(form.dom);
+
+            field.setDOM(fieldDOM); // bind the UI element back to the field object
+            field.doSave(false);
+            form.addField(field, false); // add the field to the form object
+        }
+    }
+    FormEditController.prototype.setFormDataObject = function (formDataObject) {
+        this.formDataObject = formDataObject;
+    }
+    this.formEditController = new FormEditController();
 
     // Form Display Controller
     // controller that is in charge of processing the data from the json object and display the form
@@ -90,9 +294,9 @@ var DynamicForm = function () {
 
             field.setDisplayDOM(fieldDOM); // set the field UI element for the field object
             field.setDOM(fieldDOM); // build the field UI element to the field object
-            form.addField(field); // add the field object to the created form
+            form.addField(field, false); // add the field object to the created form
         }
-        DynamicForm.formSet.addForm(form); // add the created form to the global form set
+        DynamicForm.formObjectController.setForm(form); // add the created form to the global form set
 
         // Display the form submission and back button under the form
         var controlList = $('<tr class="control-list display-field">');
@@ -103,7 +307,7 @@ var DynamicForm = function () {
     }
     FormDisplayController.prototype.validateFields = function () {
         var allPassedValidation = true;
-        var form = DynamicForm.formSet.formSet[0];
+        var form = DynamicForm.formObjectController.getForm();
         var fieldSet = form.fieldSet;
 
         for (var i = [] in fieldSet) {
@@ -121,14 +325,20 @@ var DynamicForm = function () {
     FormDisplayController.prototype.setFormDataObject = function (formDataObject) {
         this.formDataObject = formDataObject;
     }
-    this.formController = new FormDisplayController();
+    this.formDisplayController = new FormDisplayController();
 
-    // Available Item Set
+    // Available Item Set class
+    // Enables user to add field by UI drag and drop function
     var AvailableItemSet = function () {
-        this.itemSet = [];
+        this.itemSet = []; // variable that stores all available fields
         this.itemList = $("#available-item-list");
+        $(".back-button").on("click.back-to-list", function () {
+            window.location.replace("form-list.html?communityID=" + communityID);
+        });
 
+        // Method to create a new available field with category
         this.addItem = function (item, category) {
+            //If the specific category does not exist, create a new one on screen
             var targetCategory = $(".available-item-category .available-item-category-label[data-category='" + category + "']");
 
             if (targetCategory.length === 0) {
@@ -143,6 +353,8 @@ var DynamicForm = function () {
             var fieldDOM = this.itemSet[index].toFieldDOM().attr({
                 "data-id": index
             });
+            // Connect the available field list with the form field list
+            // Setting up the drag and drop function
             targetCategory.closest(".available-item-category").find(".available-item-list").append(fieldDOM)
                 .sortable({
                     helper: "clone",
@@ -155,6 +367,8 @@ var DynamicForm = function () {
                     stop: function (event, ui) {
                         $(this).sortable("cancel");
                     },
+                    // when a field is dropped onto the form field list
+                    // clone the desired field object from this list to that list
                     remove: function (event, ui) {
                         var id = ui.item.attr("data-id");
                         var field = DynamicForm.availableItemSet.getItemById(id);
@@ -162,7 +376,7 @@ var DynamicForm = function () {
                         var clonedDOM = clonedField.toFieldDOM()
                             .insertAfter(ui.item);
                         clonedField.setDOM(clonedDOM);
-                        DynamicForm.formSet.waitForProcessedField = clonedField;
+                        DynamicForm.formObjectController.waitForProcessedField = clonedField;
 
                         return clonedDOM;
                     }
@@ -185,11 +399,11 @@ var DynamicForm = function () {
     }
     this.availableItemSet = new AvailableItemSet();
 
-    // Form Set
-    var FormSet = function () {
-        this.formSet = [];
+    // Form Object Controller class
+    // In charge of controlling the form object
+    var FormObjectController = function () {
+        this.editingForm = {}; // variable that sotres the form object
         this.formList = $("#form-container-list");
-        this.addButton = this.formList.find("#dynamic_form-tab-controls #add-form-button");
         this.currentForm;
         this.previousEditingField;
         this.waitForProcessedField;
@@ -198,16 +412,12 @@ var DynamicForm = function () {
             axis: "x",
             containment: "#dynamic_form-tab-controls",
             items: ".ui-tabs-tab",
-            cancel: "#add-form-button",
             stop: function () {
-                DynamicForm.formSet.tabContainer.tabs("refresh");
+                DynamicForm.formObjectController.tabContainer.tabs("refresh");
             }
         });
-        this.addButton.on("click.add-form", function (event) {
-            var form = new DynamicForm.Form("", {});
-            DynamicForm.controlPanel.enablePanel(form);
-        });
 
+        // Method to open a field's control panel
         this.enableFieldEdition = function (field, form) {
             try {
                 this.previousEditingField.dom.removeClass("active");
@@ -220,105 +430,80 @@ var DynamicForm = function () {
             this.previousEditingField = field;
         }
     };
-    FormSet.prototype.isExist = function (memberType) {
-        for (var i = 0; i < this.formSet.length; i++) {
-            try {
-                if (this.formSet[i].memberType === memberType) {
-                    return true;
-                }
-            } catch (error) {
+    // Method to set this controller a target form and display on screen
+    FormObjectController.prototype.setForm = function (form) {
+        var index = this.editingForm.length;
+        this.editingForm = form;
 
-            }
-        }
-        return false;
-    }
-    FormSet.prototype.addForm = function (form) {
-        if (this.isExist(form.memberType)) {
-            window.alert("Sorry, the member type has been existed.\nPlease try another title.");
-            return;
-        }
-
-        var index = this.formSet.length;
-        this.formSet[index] = form;
-
-        var deleteButton = $('<i class="material-icons">close</i>');
-        deleteButton.on("click.delete-form", {
-            form: this.formSet[index]
-        }, function (event) {
-            var form = event.data.form;
-            var confirmResult = window.confirm("Are you sure you want to delete this?\nPlease note that this action cannot be undone.");
-
-            if (confirmResult === true) {
-                DynamicForm.formSet.removeForm(form);
-            }
-        });
+        // Display the form on screen
         var generatedID = DynamicForm.generateID(10, "form-");
         var tabLabel = $('<li data-form_id="' + index + '"></li>');
+
         tabLabel.append('<a href="#' + generatedID + '">' + form.memberType + '</a>');
-        tabLabel.append(deleteButton);
         this.formList.find("#dynamic_form-tab-controls").prepend(tabLabel);
+
+        // create a form UI element
         var createdForm = $('<div class="form-container">').attr({
             id: generatedID,
             "data-form_id": index
-        }).appendTo(this.formList);
+        });
+        this.formList.find("#dynamic_form-tab-controls").after(createdForm);
+        // make the fields in the form sortable
         createdForm.sortable({
             tolerance: 'pointer',
             placeholder: "item-drop-position",
             start: function (event, ui) {
                 $(this).sortable("refresh");
+
+                var subSet = ui.item.find(".sub-set");
+                if (subSet.length >= 1) {
+                    var isEnabled = subSet.hasClass("enabled");
+
+                    if (isEnabled) {
+                        subSet.removeClass("enabled");
+                    }
+                }
             },
+            // When the order of fields is changed, enable auto-saving with leaving warning
+            sort: function (event, ui) {
+                DynamicForm.formSaveController.enableSaveWarning();
+            },
+            // When an available field is dropped on this, add the field to this form object
             receive: function (event, ui) {
                 var formID = $(this).attr("data-form_id");
-                var form = DynamicForm.formSet.getFormByID(formID);
-                var field = DynamicForm.formSet.waitForProcessedField;
+                var form = DynamicForm.formObjectController.getForm();
+                var field = DynamicForm.formObjectController.waitForProcessedField;
                 form.addField(field);
             }
         });
-        this.formSet[index].setDOM(createdForm);
+        // bind the created form UI elements to the form object
+        this.editingForm.setDOM(createdForm);
         this.refreshTabs();
     }
-    FormSet.prototype.removeForm = function (form) {
-        var index = this.formSet.indexOf(form);
-        this.removeFormByID(index);
-    }
-    FormSet.prototype.removeFormByID = function (id) {
-        if (id != -1) {
-            this.formList.find('#dynamic_form-tab-controls li[data-form_id="' + id + '"]').remove();
-            this.formSet[id].dom.remove();
-            this.refreshTabs();
-            delete this.formSet[id];
-        }
-    }
-    FormSet.prototype.refreshTabs = function () {
+    // refresh the field list to ensure that its fields' position are correct
+    FormObjectController.prototype.refreshTabs = function () {
         this.formList.tabs("refresh");
         this.formList.tabs("option", "active", 0);
     }
-    FormSet.prototype.getFormByID = function (id) {
-        return this.formSet[id];
+    FormObjectController.prototype.getForm = function () {
+        return this.editingForm;
     }
-    FormSet.prototype.getIdByForm = function (form) {
-        return this.formSet.indexOf(form);
+    FormObjectController.prototype.getIdByForm = function (form) {
+        return this.editingForm;
     }
-    FormSet.prototype.toJSONObject = function () {
-        var jsonObject = {
-            formSet: []
-        };
+    // Generate and return a JSON Object of the form object
+    FormObjectController.prototype.getJSONFromForm = function () {
+        var jsonObject = {};
+        var form = this.editingForm;
 
-        for (var i = 0; i < this.formSet.length; i++) {
-            var form = this.formSet[i];
-            var index = jsonObject.formSet.length;
-            if (this.formSet[i] === undefined) {
-                continue;
-            }
-
-            jsonObject.formSet[index] = this.formSet[i].toJSONObject();
-        }
+        jsonObject = this.editingForm.toJSONObject();
 
         return jsonObject;
     }
-    this.formSet = new FormSet();
+    this.formObjectController = new FormObjectController();
 
-    // Preview Form Controller
+    // Preview Form Controller class
+    // In charge of performing preview function
     var PreviewFormController = function () {
         this.previewButton = $(".dynamic-form-button.form-preview-button");
 
@@ -326,13 +511,15 @@ var DynamicForm = function () {
             DynamicForm.previewFormController.previewCurrentForm();
         });
     }
+    // Method to preview this form
     PreviewFormController.prototype.previewCurrentForm = function () {
-        var formID = DynamicForm.formSet.formList.tabs("instance").active.attr("data-form_id");
+        var formID = DynamicForm.formObjectController.formList.tabs("instance").active.attr("data-form_id");
 
         if (formID != undefined) {
             this.previewFormByID(formID);
         }
     }
+    // update the existing preview window
     PreviewFormController.prototype.updateCurrentPreview = function () {
         if (this.dom != undefined) {
             var formID = this.dom.attr("data-form_id");
@@ -342,9 +529,11 @@ var DynamicForm = function () {
             this.previewFormByID(formID);
         }
     }
+    // Method to display the form by the form object in a pop up window
     PreviewFormController.prototype.previewFormByID = function (id) {
-        var form = DynamicForm.formSet.getFormByID(id);
+        var form = DynamicForm.formObjectController.getForm(); // get the form from FormObjectController
 
+        // when there is no pop up preview window, create a new one
         if (this.dom === undefined) {
             this.dom = $('<div class="preview-form-container">').dialog({
                 width: "fit-content",
@@ -362,18 +551,23 @@ var DynamicForm = function () {
                 "data-form_id": id
             });
         }
+        // by using form.toDisplayDOM()
+        // generate the form UI element with its fields, then display on screen with pop up window
         this.dom = this.dom.empty().append(form.toDisplayDOM());
         this.dom.dialog("open");
     }
     this.previewFormController = new PreviewFormController();
 
-    // Control Panel
+    // Control Panel class
+    // In charge of displaying control panel and controlling the save data behavior of control panel
     var ControlPanel = function () {
         this.panel = $("#item-manage-control");
-        this.isEnabled = false;
-        this.locked = false;
+        this.isEnabled = false; // specify if the panel is enabled
+        this.locked = false; // specify if the panel is locked
 
+        // enables the panel with a panel content object
         this.enablePanel = function (panelContent, form) {
+            // if the panel is locked, not do any thing
             if (this.locked) {
                 return;
             }
@@ -407,7 +601,7 @@ var DynamicForm = function () {
         }
         this.buildPanelContent = function (panelContent, form) {
             var content = panelContent.toPanelDOM();
-            var formID = DynamicForm.formSet.getIdByForm(form);
+            var formID = DynamicForm.formObjectController.getIdByForm(form);
             var fieldID = -1;
             try {
                 fieldID = form.getIdByField(panelContent);
@@ -433,6 +627,14 @@ var DynamicForm = function () {
     }
     this.PanelContent.prototype.setData = function (data) {
         this.data = data;
+        try {
+            this.doSave();
+        } catch (error) {
+
+        }
+    }
+    this.PanelContent.prototype.doSave = function () {
+
     }
     this.PanelContent.prototype.toPanelDOM = function () {
         var dom = $('<div class="tab-control">');
@@ -517,10 +719,14 @@ var DynamicForm = function () {
         var dom = $('<div class="field-control ' + name + '">');
         dom.append('<label class="field-text">' + label + '</label>');
         var optionList = $('<div class="field-option-list">');
-        for (var i = 0; i < values.length; i++) {
-            var option = $('<input class="field-input form-control ' + ((isHalf == true) ? "half-field" : "") + ' inline-field" type="text" >').val(((values[i] != undefined) ? values[i] : ""));
-            var removeOptionButton = $('<i class="material-icons remove-option-button">close</i>');
+        var input = $('<input class="field-input form-control remove-option-button half-field ' + ((isHalf == true) ? "inline-field" : "") + '" type="text" >');
+        var optionItem = $('<div class="option-item">').append(input);
 
+        for (var i = 0; i < values.length; i++) {
+            var removeOptionButton = $('<i class="material-icons remove-option-button">close</i>');
+            var option = optionItem.clone();
+
+            option.find("input").val(((values[i] != undefined) ? values[i] : ""));
             removeOptionButton.on("click.remove-otpion", function (event) {
                 var beforeOption = $(this).prev();
 
@@ -528,7 +734,7 @@ var DynamicForm = function () {
             });
 
             if (i >= 1) {
-                option = option.add(removeOptionButton);
+                option.append(removeOptionButton);
             }
 
             optionList.append(option);
@@ -542,11 +748,13 @@ var DynamicForm = function () {
 
             addOptionButton.on("click.add-otpion", {
                 optionList: optionList,
-                isHalf: isHalf
+                isHalf: isHalf,
+                optionItem: optionItem.clone()
             }, function (event) {
                 var optionList = event.data.optionList;
                 var removeOptionButton = $('<i class="material-icons remove-option-button">close</i>');
                 var isHalf = event.data.isHalf;
+                var optionItem = event.data.optionItem;
 
                 removeOptionButton.on("click.remove-otpion", function (event) {
                     var beforeOption = $(this).prev();
@@ -554,8 +762,11 @@ var DynamicForm = function () {
                     $(this).add(beforeOption).remove();
                 });
 
-                var input = $('<input class="field-input form-control remove-option-button half-field ' + ((isHalf == true) ? "inline-field" : "") + '" type="text" >');
-                optionList.append($('<div>').append(input.add(removeOptionButton)));
+                var option = optionItem.clone()
+                    .append(removeOptionButton);
+                var input = option.find("input");
+
+                optionList.append(option);
                 input.focus();
             });
 
@@ -574,7 +785,7 @@ var DynamicForm = function () {
         var datepicker = $('<input class="field-input form-control" type="text" >').val(((value != undefined) ? value : ""));
         datepicker.datepicker({
             dateFormat: "dd-mm-yy",
-        });;
+        });
         dom.append(datepicker);
 
         return dom;
@@ -584,10 +795,11 @@ var DynamicForm = function () {
     this.Form = function (memberType, data) {
         DynamicForm.PanelContent.call(this, data);
 
+        this.displayDOM;
         this.memberType = memberType;
         this.fieldSet = [];
 
-        this.addField = function (field, form) {
+        this.addField = function (field, enabledWarning) {
             var index = this.fieldSet.length;
             this.fieldSet[index] = field;
             this.fieldSet[index].setForm(this);
@@ -601,7 +813,7 @@ var DynamicForm = function () {
                 var form = event.data.form;
                 var field = event.data.field;
 
-                DynamicForm.formSet.enableFieldEdition(field, form);
+                DynamicForm.formObjectController.enableFieldEdition(field, form);
             });
             this.fieldSet[index].dom.find(".form-edit-control.delete").on("click.form-delete", {
                 form: this,
@@ -612,14 +824,22 @@ var DynamicForm = function () {
 
                 form.removeField(field);
             });
+
+            if (enabledWarning === false) {
+                DynamicForm.formSaveController.disableSaveWarning();
+            } else {
+                DynamicForm.formSaveController.enableSaveWarning();
+            }
         }
         this.removeField = function (field) {
             var index = this.fieldSet.indexOf(field);
             this.removeFieldById(index);
+            DynamicForm.formSaveController.enableSaveWarning();
         }
         this.removeFieldById = function (id) {
             this.fieldSet[id].dom.remove();
             delete this.fieldSet[id];
+            DynamicForm.formSaveController.enableSaveWarning();
         }
         this.setMemberType = function (memberType) {
             this.memberType = memberType;
@@ -630,34 +850,11 @@ var DynamicForm = function () {
     this.Form.prototype.getFieldById = function (id) {
         return this.fieldSet[id];
     }
-    this.Form.prototype.toPanelDOM = function () {
-        var dom = Object.getPrototypeOf(DynamicForm.Form.prototype).toPanelDOM.call(this);
-        var saveButton = $('<input type="button" class="control-save save-form" value="Create"/>');
-        saveButton.on("click.save-form", {
-            form: this
-        }, function (event) {
-            var form = event.data.form;
-            var value = $(this).closest("#item-manage-control").find(".field-control.member-type input").val();
-
-            form.setMemberType(value);
-            DynamicForm.formSet.addForm(form);
-            DynamicForm.controlPanel.disablePanel();
-        });
-        dom.append(saveButton);
-        dom.append(this.createHeader("Create Form"));
-        var memberTypeField = this.createText("member-type", "Member Type", "");
-        dom.append(memberTypeField);
-
-        return dom;
-    }
     this.Form.prototype.getFieldById = function (id) {
         return this.fieldSet[id];
     }
     this.Form.prototype.getIdByField = function (field) {
         return this.fieldSet.indexOf(field);
-    }
-    this.Form.prototype.setDOM = function (dom) {
-        this.dom = dom;
     }
     this.Form.prototype.setDisplayDOM = function (displayDOM) {
         this.displayDOM = displayDOM;
@@ -675,10 +872,17 @@ var DynamicForm = function () {
     }
     this.Form.prototype.toDisplayDOM = function () {
         var dom = $('<div class="custom-form-container">');
+        var orderedFieldList = [];
         var fields = $(this.dom).find(".field-item-container");
+        for (var i = 0; i < fields.length; i++) {
+            var id = $(fields[i]).attr("data-id");
+            var field = this.getFieldById(id);
 
-        for (var i = 0; i < this.fieldSet.length; i++) {
-            dom.append(this.fieldSet[i].toDisplayDOM());
+            orderedFieldList[i] = field;
+        }
+
+        for (var i = 0; i < orderedFieldList.length; i++) {
+            dom.append(orderedFieldList[i].toDisplayDOM());
         }
 
         var headline = $('<tr class="display-field display-field-combined" data-type="member_type" colspan="2">');
@@ -687,14 +891,25 @@ var DynamicForm = function () {
 
         return dom;
     }
+    this.Form.prototype.setDisplayDOM = function (displayDOM) {
+        this.displayDOM = displayDOM;
+    }
     this.Form.prototype.toJSONObject = function () {
         var jsonObject = {
             memberType: this.memberType,
             fieldSet: []
         };
+        var orderedFieldList = [];
+        var fields = $(this.dom).find(".field-item-container");
+        for (var i = 0; i < fields.length; i++) {
+            var id = $(fields[i]).attr("data-id");
+            var field = this.getFieldById(id);
 
-        for (var i = 0; i < this.fieldSet.length; i++) {
-            var field = this.fieldSet[i];
+            orderedFieldList[i] = field;
+        }
+
+        for (var i = 0; i < orderedFieldList.length; i++) {
+            var field = orderedFieldList[i];
             var index = jsonObject.fieldSet.length;
             if (field === undefined) {
                 continue;
@@ -744,7 +959,7 @@ var DynamicForm = function () {
         var saveButton = $('<input type="button" class="control-save" value="Save">');
         saveButton.on("click.save-data", function (event) {
             var formID = DynamicForm.controlPanel.panel.find(".tab-control").attr("data-form_id");
-            var form = DynamicForm.formSet.getFormByID(formID);
+            var form = DynamicForm.formObjectController.getForm();
             var fieldID = DynamicForm.controlPanel.panel.find(".tab-control").attr("data-field_id");
             var field = form.getFieldById(fieldID);
             var optionList = DynamicForm.controlPanel.panel.find(".field-option-list input");
@@ -779,6 +994,7 @@ var DynamicForm = function () {
                     continue;
                 }
 
+                // Preserve the escape string from text value before stroring them to the data object
                 data[name] = $(allInputs[i]).val();
             }
 
@@ -792,9 +1008,13 @@ var DynamicForm = function () {
     this.Field.prototype.doValidate = function (value) {
         const passedValidation = true;
 
+        this.displayDOM.removeClass("error");
+
         return passedValidation;
     }
     this.Field.prototype.doError = function (value) {
+        this.displayDOM.addClass("error");
+
         return;
     }
     this.Field.prototype.getFieldValue = function () {
@@ -825,12 +1045,19 @@ var DynamicForm = function () {
 
         return jsonObject;
     }
-    this.Field.prototype.doSave = function () {
+    this.Field.prototype.doSave = function (enabledWarning) {
         Object.getPrototypeOf(DynamicForm.Field.prototype).doSave.call(this);
-        this.dom.find(".form-label").text(this.data.label);
-        this.dom.find(".form-required").attr({
+        var formField = this.dom.find(".field-item");
+        formField.find(".form-label").text(this.data.label);
+        formField.find(".form-required").attr({
             "data-required": this.data.isRequired
         });
+
+        if (enabledWarning === false) {
+            DynamicForm.formSaveController.disableSaveWarning();
+        } else {
+            DynamicForm.formSaveController.enableSaveWarning();
+        }
     }
     this.Field.prototype.setDOM = function (dom) {
         this.dom = dom;
@@ -876,6 +1103,7 @@ var DynamicForm = function () {
     this.TextField = function (typeLabel, data) {
         DynamicForm.Field.call(this, "text_format", typeLabel, "text_box", data);
 
+        // Data Type conversion from index to regex
         this.regexList = {
             1: '^[\\w\s ]*$',
             2: '^[0-9]*$'
@@ -963,12 +1191,6 @@ var DynamicForm = function () {
             console.log(error)
         }
 
-        if (!passedValidation) {
-            this.displayDOM.addClass("error");
-        } else {
-            this.displayDOM.removeClass("error");
-        }
-
         return passedValidation;
     }
 
@@ -1037,12 +1259,6 @@ var DynamicForm = function () {
             }
         } catch (error) {
             console.log(error)
-        }
-
-        if (!passedValidation) {
-            this.displayDOM.addClass("error");
-        } else {
-            this.displayDOM.removeClass("error");
         }
 
         return passedValidation;
@@ -1141,12 +1357,6 @@ var DynamicForm = function () {
             console.log(error)
         }
 
-        if (!passedValidation) {
-            this.displayDOM.addClass("error");
-        } else {
-            this.displayDOM.removeClass("error");
-        }
-
         return passedValidation;
     }
 
@@ -1155,7 +1365,7 @@ var DynamicForm = function () {
         DynamicForm.Field.call(this, "radio_button_checked", typeLabel, "radio_button_group", data);
     }
     this.RadioButtonGroup.prototype = Object.create(this.Field.prototype);
-    this.RadioButtonGroup.constructor = this.FileUpload;
+    this.RadioButtonGroup.constructor = this.RadioButtonGroup;
     this.RadioButtonGroup.prototype.toFieldDOM = function () {
         var dom = Object.getPrototypeOf(DynamicForm.RadioButtonGroup.prototype).toFieldDOM.call(this);
         dom.append('<div class="sub-set option-list">');
@@ -1197,18 +1407,49 @@ var DynamicForm = function () {
     }
     this.RadioButtonGroup.prototype.doSave = function () {
         Object.getPrototypeOf(DynamicForm.RadioButtonGroup.prototype).doSave.call(this);
-        // var dom = this.dom;
-        // var optionListDOM = dom.find('.option-list');
+        var dom = this.dom;
+        var optionListDOM = dom.find('.option-list');
 
-        // optionListDOM.empty();
-        // for (var i = 0; i < this.data["option-list"].length; i++) {
-        //     var option = $('<div class="option-item">');
-        //     var optionData = this.data["option-list"][i];
-        //     var optionLabel = $('<label class="option-label">').text(optionData);
+        optionListDOM.empty();
+        for (var i = 0; i < this.data["option-list"].length; i++) {
+            var option = $('<div class="sub-item">');
+            var optionData = this.data["option-list"][i];
+            var optionLabel = $('<label class="option-label">').text(optionData);
 
-        //     option.append(optionLabel);
-        //     optionListDOM.append(option);
-        // }
+            option.append(optionLabel);
+            optionListDOM.append(option);
+        }
+
+        var formField = dom.find(".field-item");
+        var subSet = dom.find(".sub-set");
+        if (subSet.length >= 1) {
+            var subItem = subSet.children();
+            var subSign = formField.find(".sub-sign");
+
+            if (subItem.length >= 1) {
+
+                if (subSign.length === 0) {
+                    subSign = $('<i class="material-icons sub-sign">keyboard_arrow_down</i>');
+                    formField.prepend(subSign);
+                }
+
+                formField.off("click.enable-viewing-sub-set");
+                formField.on("click.enable-viewing-sub-set", {
+                    subSet: subSet
+                }, function (event) {
+                    var subSet = event.data.subSet;
+                    var isEnabled = subSet.hasClass("enabled");
+
+                    if (isEnabled) {
+                        subSet.removeClass("enabled");
+                    } else {
+                        subSet.addClass("enabled");
+                    }
+                });
+            } else {
+                subSign.remove();
+            }
+        }
     }
 
     // Checkbox Group
@@ -1216,9 +1457,10 @@ var DynamicForm = function () {
         DynamicForm.Field.call(this, "check_box", typeLabel, "checkbox_group", data);
     }
     this.CheckboxGroup.prototype = Object.create(this.Field.prototype);
-    this.CheckboxGroup.constructor = this.FileUpload;
+    this.CheckboxGroup.constructor = this.CheckboxGroup;
     this.CheckboxGroup.prototype.toFieldDOM = function () {
         var dom = Object.getPrototypeOf(DynamicForm.CheckboxGroup.prototype).toFieldDOM.call(this);
+        dom.append('<div class="sub-set option-list">');
 
         return dom;
     }
@@ -1237,7 +1479,7 @@ var DynamicForm = function () {
         var field = Object.getPrototypeOf(DynamicForm.CheckboxGroup.prototype).toDisplayDOM.call(this);
         var label = $('<td class="display-field-label block">' + this.data.label + '</td>').attr({
             "data-isRequired": this.data.isRequired
-        });
+        });;
         var optionList = $('<td class="display-field-input input-sm block" >');
         var name = DynamicForm.generateName(10);
         for (var i = 0; i < this.data["option-list"].length; i++) {
@@ -1255,6 +1497,52 @@ var DynamicForm = function () {
 
         return field;
     }
+    this.CheckboxGroup.prototype.doSave = function () {
+        Object.getPrototypeOf(DynamicForm.CheckboxGroup.prototype).doSave.call(this);
+        var dom = this.dom;
+        var optionListDOM = dom.find('.option-list');
+
+        optionListDOM.empty();
+        for (var i = 0; i < this.data["option-list"].length; i++) {
+            var option = $('<div class="sub-item">');
+            var optionData = this.data["option-list"][i];
+            var optionLabel = $('<label class="option-label">').text(optionData);
+
+            option.append(optionLabel);
+            optionListDOM.append(option);
+        }
+
+        var formField = dom.find(".field-item");
+        var subSet = dom.find(".sub-set");
+        if (subSet.length >= 1) {
+            var subItem = subSet.children();
+            var subSign = formField.find(".sub-sign");
+
+            if (subItem.length >= 1) {
+
+                if (subSign.length === 0) {
+                    subSign = $('<i class="material-icons sub-sign">keyboard_arrow_down</i>');
+                    formField.prepend(subSign);
+                }
+
+                formField.off("click.enable-viewing-sub-set");
+                formField.on("click.enable-viewing-sub-set", {
+                    subSet: subSet
+                }, function (event) {
+                    var subSet = event.data.subSet;
+                    var isEnabled = subSet.hasClass("enabled");
+
+                    if (isEnabled) {
+                        subSet.removeClass("enabled");
+                    } else {
+                        subSet.addClass("enabled");
+                    }
+                });
+            } else {
+                subSign.remove();
+            }
+        }
+    }
     this.CheckboxGroup.prototype.doValidate = function () {
         var passedValidation = Object.getPrototypeOf(DynamicForm.CheckboxGroup.prototype).doValidate.call(this);
         var value = this.getFieldValue();
@@ -1270,20 +1558,18 @@ var DynamicForm = function () {
             console.log(error)
         }
 
-        if (!passedValidation) {
-            this.displayDOM.addClass("error");
-        }
-
         return passedValidation;
     }
+
     // Dropdown List
     this.DropDownList = function (typeLabel, data) {
         DynamicForm.Field.call(this, "arrow_drop_down_circle", typeLabel, "drop_down_list", data);
     }
     this.DropDownList.prototype = Object.create(this.Field.prototype);
-    this.DropDownList.constructor = this.FileUpload;
+    this.DropDownList.constructor = this.DropDownList;
     this.DropDownList.prototype.toFieldDOM = function () {
         var dom = Object.getPrototypeOf(DynamicForm.DropDownList.prototype).toFieldDOM.call(this);
+        dom.append('<div class="sub-set option-list">');
 
         return dom;
     }
@@ -1314,13 +1600,59 @@ var DynamicForm = function () {
 
         return field;
     }
+    this.DropDownList.prototype.doSave = function () {
+        Object.getPrototypeOf(DynamicForm.DropDownList.prototype).doSave.call(this);
+        var dom = this.dom;
+        var optionListDOM = dom.find('.option-list');
+
+        optionListDOM.empty();
+        for (var i = 0; i < this.data["option-list"].length; i++) {
+            var option = $('<div class="sub-item">');
+            var optionData = this.data["option-list"][i];
+            var optionLabel = $('<label class="option-label">').text(optionData);
+
+            option.append(optionLabel);
+            optionListDOM.append(option);
+        }
+
+        var formField = dom.find(".field-item");
+        var subSet = dom.find(".sub-set");
+        if (subSet.length >= 1) {
+            var subItem = subSet.children();
+            var subSign = formField.find(".sub-sign");
+
+            if (subItem.length >= 1) {
+
+                if (subSign.length === 0) {
+                    subSign = $('<i class="material-icons sub-sign">keyboard_arrow_down</i>');
+                    formField.prepend(subSign);
+                }
+
+                formField.off("click.enable-viewing-sub-set");
+                formField.on("click.enable-viewing-sub-set", {
+                    subSet: subSet
+                }, function (event) {
+                    var subSet = event.data.subSet;
+                    var isEnabled = subSet.hasClass("enabled");
+
+                    if (isEnabled) {
+                        subSet.removeClass("enabled");
+                    } else {
+                        subSet.addClass("enabled");
+                    }
+                });
+            } else {
+                subSign.remove();
+            }
+        }
+    }
 
     // Toggle Button
     this.ToogleButton = function (typeLabel, data) {
         DynamicForm.Field.call(this, "invert_colors", typeLabel, "toggle_button", data);
     }
     this.ToogleButton.prototype = Object.create(this.Field.prototype);
-    this.ToogleButton.constructor = this.FileUpload;
+    this.ToogleButton.constructor = this.ToogleButton;
     this.ToogleButton.prototype.toFieldDOM = function () {
         var dom = Object.getPrototypeOf(DynamicForm.ToogleButton.prototype).toFieldDOM.call(this);
 
@@ -1353,7 +1685,7 @@ var DynamicForm = function () {
         DynamicForm.Field.call(this, "date_range", typeLabel, "date_time_picker", data);
     }
     this.DatetimePicker.prototype = Object.create(this.Field.prototype);
-    this.DatetimePicker.constructor = this.FileUpload;
+    this.DatetimePicker.constructor = this.DatetimePicker;
     this.DatetimePicker.prototype.toFieldDOM = function () {
         var dom = Object.getPrototypeOf(DynamicForm.DatetimePicker.prototype).toFieldDOM.call(this);
 
@@ -1411,12 +1743,6 @@ var DynamicForm = function () {
             }
         } catch (error) {
             console.log(error)
-        }
-
-        if (!passedValidation) {
-            this.displayDOM.addClass("error");
-        } else {
-            this.displayDOM.removeClass("error");
         }
 
         return passedValidation;
@@ -1513,50 +1839,50 @@ firebase.auth().onAuthStateChanged(function (user) {
                     ref.child("FormSet/" + formID).once("value", function (data) {
                         formDataObject = data.val();
 
-                        DynamicForm.formController.setFormDataObject(formDataObject);
-                        DynamicForm.formController.loadFormFromDataObject();
+                        DynamicForm.formDisplayController.setFormDataObject(formDataObject);
+                        DynamicForm.formDisplayController.loadFormFromDataObject();
 
                         $("#back-button").on("click.back-to-selection", function () {
                             window.location.replace("select-member-form.html?communityID=" + communityID);
                         });
                         $("#submit-form").on("click.submit-form", function () {
-                            var form = DynamicForm.formSet.formSet[0];
+                            var form = DynamicForm.formObjectController.editingForm;
                             var values = form.getFormValues();
                             var memberRecord = {
                                 memberTypeID: memberTypeID,
                                 values: values
                             }
-                            var passedValidation = DynamicForm.formController.validateFields();
+                            var passedValidation = DynamicForm.formDisplayController.validateFields();
 
                             if (passedValidation) {
-                              var communityID = $.urlParam("communityID");
-                              var refence = firebase.database().ref("Community/"+communityID);
-                              refence.once('value',function(Pardata) {
-                                AddUser(Pardata.val().name);
-                              });
-
-                              function AddUser(CommunityName) {
-                                var refs = firebase.database().ref("InstantMessage/Details/Community");
-                                refs.once('value',function(WDate) {
-                                  WDate.forEach(function(childWDate) {
-                                    // alert("Hi");
-                                    if (childWDate.val().Name == CommunityName)  {
-                                      getKey(childWDate.key);
-                                      // alert(childWDate.key);
-                                    }
-                                  });
+                                var communityID = $.urlParam("communityID");
+                                var refence = firebase.database().ref("Community/" + communityID);
+                                refence.once('value', function (Pardata) {
+                                    AddUser(Pardata.val().name);
                                 });
-                                alert("You are added into Community Group.");
-                              }
 
-                              function getKey(Communitykey) {
-                                var Gref = firebase.database().ref("InstantMessage/Details/Community/"+Communitykey+'/Members');
-                                  var strings = {
-                                    email: firebase.auth().currentUser.email
-                                  };
-                                  Gref.push(strings);
-                              }
-                              //============
+                                function AddUser(CommunityName) {
+                                    var refs = firebase.database().ref("InstantMessage/Details/Community");
+                                    refs.once('value', function (WDate) {
+                                        WDate.forEach(function (childWDate) {
+                                            // alert("Hi");
+                                            if (childWDate.val().Name == CommunityName) {
+                                                getKey(childWDate.key);
+                                                // alert(childWDate.key);
+                                            }
+                                        });
+                                    });
+                                    alert("Congratulations! You have registered successfully.");
+                                }
+
+                                function getKey(Communitykey) {
+                                    var Gref = firebase.database().ref("InstantMessage/Details/Community/" + Communitykey + '/Members');
+                                    var strings = {
+                                        email: firebase.auth().currentUser.email
+                                    };
+                                    Gref.push(strings);
+                                }
+                                //============
 
 
 
