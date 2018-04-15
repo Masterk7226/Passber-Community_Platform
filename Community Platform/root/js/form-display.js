@@ -43,7 +43,7 @@ var DynamicForm = function () {
     }
 
     // Form Display Controller
-    // controller that is in charge of processing the data from the json object and display the form 
+    // controller that is in charge of processing the data from the json object and display the form
     var FormDisplayController = function () {
         this.formDataObject = {}; // variable that stores the json object of the form
         this.fieldTypes = {};
@@ -952,7 +952,7 @@ var DynamicForm = function () {
                 passedValidation = false;
             }
 
-            // Custom Regular Expression 
+            // Custom Regular Expression
 
             var customRegex = new RegExp(this.data.regex); // convert the regex string to a regular expression object
             console.log(!customRegex.test(value))
@@ -1529,10 +1529,41 @@ firebase.auth().onAuthStateChanged(function (user) {
                             var passedValidation = DynamicForm.formController.validateFields();
 
                             if (passedValidation) {
+                              var communityID = $.urlParam("communityID");
+                              var refence = firebase.database().ref("Community/"+communityID);
+                              refence.once('value',function(Pardata) {
+                                AddUser(Pardata.val().name);
+                              });
+
+                              function AddUser(CommunityName) {
+                                var refs = firebase.database().ref("InstantMessage/Details/Community");
+                                refs.once('value',function(WDate) {
+                                  WDate.forEach(function(childWDate) {
+                                    // alert("Hi");
+                                    if (childWDate.val().Name == CommunityName)  {
+                                      getKey(childWDate.key);
+                                      // alert(childWDate.key);
+                                    }
+                                  });
+                                });
+                                alert("You are added into Community Group.");
+                              }
+
+                              function getKey(Communitykey) {
+                                var Gref = firebase.database().ref("InstantMessage/Details/Community/"+Communitykey+'/Members');
+                                  var strings = {
+                                    email: firebase.auth().currentUser.email
+                                  };
+                                  Gref.push(strings);
+                              }
+                              //============
+
                                 ref.child("MemberRecord/" + userID).set(memberRecord).then(function () {
                                     window.location.replace("community-info.html?communityID=" + communityID);
                                 });
                             }
+
+
                         });
                     });
                 }

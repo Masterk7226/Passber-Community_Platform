@@ -56,19 +56,18 @@ function FriendlyChat() {
 
 
   //Setting 3
-  // var btn_person = document.getElementById("Person");
+  var btn_community = document.getElementById("Community");
   var btn_Group = document.getElementById("Group");
   var btn_event = document.getElementById("Event");
-  // btn_person.addEventListener('click', function() {
-    // window.location = '?type=Person'
-  // });
+  btn_community.addEventListener('click', function() {
+    window.location = '?type=Community'
+  });
   btn_Group.addEventListener('click', function() {
     window.location = '?type=Group'
   });
   btn_event.addEventListener('click', function() {
     window.location = '?type=Event'
   });
-  var type = "";
 
   // Toggle for the button.
   var buttonTogglingHandler = this.toggleButton.bind(this);
@@ -94,8 +93,8 @@ FriendlyChat.prototype.initFirebase = function() {
   this.database = firebase.database();
   this.storage = firebase.storage();
   // Initiates Firebase auth and listen to auth state changes.
-  this.onAuthStateChanged();
-  // firebase.auth().onAuthStateChanged(this.onAuthStateChanged.bind(this));
+  // this.onAuthStateChanged();
+  firebase.auth().onAuthStateChanged(this.onAuthStateChanged.bind(this));
 };
 
 // FriendlyChat.prototype.getType = function() {
@@ -203,7 +202,7 @@ FriendlyChat.prototype.loadNameandUser = function(id) {
 
     data.forEach(function (childData) {
 
-      if (childData.val().email == "harrylai@gmail.com") { //Tmp
+      if (childData.val().email == firebase.auth().currentUser.email) { //Tmp
         document.getElementById("Role").style.display="block";
       } else {
         document.getElementById("Role").style.display="none";
@@ -251,7 +250,7 @@ FriendlyChat.prototype.loadNameandUser = function(id) {
 //     document.getElementById("Group_Tab").appendChild(li);
 //   }
 // }
-
+//=======================================================================
 FriendlyChat.prototype.ListGroup2 = function() {
   var makeRef = firebase.database().ref("InstantMessage/Messages/Group");
   makeRef.once("value", function(Refdata) {
@@ -262,20 +261,17 @@ FriendlyChat.prototype.ListGroup2 = function() {
 
   function Ref(Name, id) {
   var Nameref = firebase.database().ref("InstantMessage/Details/Group/"+Name+'/Members');
+
   Nameref.once("value", function(NameChild) {
     NameChild.forEach(function(childData) {
-      if (childData.val().email == "harrylai@gmail.com") { //Tmp
-      // console.log(childData.val().email);
-      // console.log("Name");
+      if (childData.val().email == firebase.auth().currentUser.email) { //Tmp
       var ref = firebase.database().ref("InstantMessage/Details/Group/"+Name);
       ref.once("value").then(function(GroupData) {
         handleEventList(GroupData.val().Name, Name, id);
-        //.Name for Details Name, .key for Details key, id should be the Message Key
       });
       }
     });
   });
-
 
   }
 
@@ -288,21 +284,36 @@ FriendlyChat.prototype.ListGroup2 = function() {
     li.appendChild(button);
     hyper.appendChild(document.createTextNode(Name));
     hyper.setAttribute("href", "?type=Group&id=" + key + "&ref=" +id);
+    button.setAttribute("class","buttonList");
     document.getElementById("Group_Tab").appendChild(li);
   }
 }
-
+//==========================================================
 FriendlyChat.prototype.ListEvent = function() {
-  var ref = firebase.database().ref("InstantMessage/Details/Event");
-  var EventList = document.getElementById("Event_Tab");
-
-  ref.once("value").then(function(EventData) {
-    EventData.forEach(function(childData) {
-      handleEventList(childData.val().Name, childData.key);
+  var makeRef = firebase.database().ref("InstantMessage/Messages/Event");
+  makeRef.once("value", function(Refdata) {
+    Refdata.forEach(function (RefChildData) {
+      Ref(RefChildData.val().Name, RefChildData.key);
     });
   });
 
-  function handleEventList(Name, key) {
+  function Ref(Name, id) {
+  var Nameref = firebase.database().ref("InstantMessage/Details/Event/"+Name+'/Members');
+
+  Nameref.once("value", function(NameChild) {
+    NameChild.forEach(function(childData) {
+      if (childData.val().email == firebase.auth().currentUser.email) { //Tmp
+      var ref = firebase.database().ref("InstantMessage/Details/Event/"+Name);
+      ref.once("value").then(function(GroupData) {
+        handleEventList(GroupData.val().Name, Name, id);
+      });
+      }
+    });
+  });
+
+  }
+
+  function handleEventList(Name, key,id) {
     var hyper = document.createElement("a");
     var li = document.createElement("li");
     var button = document.createElement("button");
@@ -310,15 +321,56 @@ FriendlyChat.prototype.ListEvent = function() {
     button.appendChild(hyper);
     li.appendChild(button);
     hyper.appendChild(document.createTextNode(Name));
-    hyper.setAttribute("href", "?type=Event&id=" + key);
+    hyper.setAttribute("href", "?type=Event&id=" + key + "&ref=" +id);
+    button.setAttribute("class","buttonList");
     document.getElementById("Event_Tab").appendChild(li);
   }
 }
+//===================================================================================
+
+FriendlyChat.prototype.ListCommunity = function() {
+  var makeRef = firebase.database().ref("InstantMessage/Messages/Community");
+  makeRef.once("value", function(Refdata) {
+    Refdata.forEach(function (RefChildData) {
+      Ref(RefChildData.val().Name, RefChildData.key);
+    });
+  });
+
+  function Ref(Name, id) {
+  var Nameref = firebase.database().ref("InstantMessage/Details/Community/"+Name+'/Members');
+
+  Nameref.once("value", function(NameChild) {
+    NameChild.forEach(function(childData) {
+      if (childData.val().email == firebase.auth().currentUser.email) { //Tmp
+      var ref = firebase.database().ref("InstantMessage/Details/Community/"+Name);
+      ref.once("value").then(function(GroupData) {
+        handleEventList(GroupData.val().Name, Name, id);
+      });
+      }
+    });
+  });
+  }
+
+  function handleEventList(Name, key,id) {
+    var hyper = document.createElement("a");
+    var li = document.createElement("li");
+    var button = document.createElement("button");
+
+    button.appendChild(hyper);
+    li.appendChild(button);
+    hyper.appendChild(document.createTextNode(Name));
+    hyper.setAttribute("href", "?type=Community&id=" + key + "&ref=" +id);
+    button.setAttribute("class","buttonList");
+    document.getElementById("Community_Tab").appendChild(li);
+  }
+}
+
+
 
 // Load and List the Group (temp: List out all the Group)
 FriendlyChat.prototype.ListAllRoom = function() {
-  //Person
-  // this.ListPerson();
+  //Community
+  this.ListCommunity();
   //Group
   this.ListGroup2();
   //Event
@@ -381,7 +433,7 @@ FriendlyChat.prototype.DelTheMember = function() {
       window.location.reload();
     } else {
       alert("Not Valid Email");
-    }公司
+    }
 
   } else {
     alert("The Email field is empty!");
@@ -393,21 +445,22 @@ FriendlyChat.prototype.saveMessage = function(e) {
   e.preventDefault();
   // Check that the user entered a message and is signed in.
   if (this.messageInput.value || this.checkSignedInWithMessage()) {
-    var currentUser = "harrylai@gmail.com"; //Tmp
+    var currentUser = firebase.auth().currentUser.email; //Tmp
     // Add a new message entry to the Firebase Database.
     // var temp = document.getElementById("GroupRef").value;
 
     var url_string = window.location.href;
     var url = new URL(url_string);
     var type = url.searchParams.get("type");
-    var MsgRef = document.getElementById("hidden_id").value;
+    var MsgRef = url.searchParams.get("ref");
+    // var MsgRef = document.getElementById("hidden_id").value;
 
     var pushRef = this.database.ref('InstantMessage/Messages/' + type + "/" + MsgRef + '/Message');
 
     pushRef.push({
-      name: "harrylai@gmail.com", //Tmp
+      name: currentUser, //Tmp
       text: this.messageInput.value,
-      photoUrl: currentUser.photoURL || '/images/profile_placeholder.png'
+      photoUrl: currentUser.photoURL || '../../img/profile_placeholder.png'
     }).then(function() {
       // Clear message text field and SEND button state.
       FriendlyChat.resetMaterialTextfield(this.messageInput);
@@ -457,7 +510,7 @@ FriendlyChat.prototype.saveImageMessage = function(event) {
     this.messagesRef.push({
       name: currentUser.displayName,
       imageUrl: FriendlyChat.LOADING_IMAGE_URL,
-      photoUrl: currentUser.photoURL || '/images/profile_placeholder.png'
+      photoUrl: currentUser.photoURL || '../../img/profile_placeholder.png'
     }).then(function(data) {
 
       // Upload the image to Cloud Storage.
@@ -486,23 +539,23 @@ FriendlyChat.prototype.signIn = function() {
 // Signs-out of Friendly Chat.
 FriendlyChat.prototype.signOut = function() {
   // Sign out of Firebase.
-  this.auth.signOut();
+  // this.auth.signOut();
 };
 
 // Triggers when the auth state change for instance when the user signs-in or signs-out.
 FriendlyChat.prototype.onAuthStateChanged = function(user) {
-  // if (user) { // User is signed in!
+  if (user) {
     // Get profile pic and user's name from the Firebase user object.
-    // var profilePicUrl = user.photoURL;
-    // var userName = user.displayName;
+    var profilePicUrl = user.photoURL;
+    var userName = user.displayName;
 
     // Set the user's profile pic and name.
-    // this.userPic.style.backgroundImage = 'url(' + (profilePicUrl || '/images/profile_placeholder.png') + ')';
-    // this.userName.textContent = userName;
+    this.userPic.style.backgroundImage = 'url(' + (profilePicUrl || '../../img/profile_placeholder.png') + ')';
+    this.userName.textContent = userName;
 
     // Show user's profile and sign-out button.
-    // this.userName.removeAttribute('hidden');
-    // this.userPic.removeAttribute('hidden');
+    this.userName.removeAttribute('hidden');
+    this.userPic.removeAttribute('hidden');
     // this.signOutButton.removeAttribute('hidden');
 
     // Hide sign-in button.
@@ -517,15 +570,15 @@ FriendlyChat.prototype.onAuthStateChanged = function(user) {
 
     // We save the Firebase Messaging Device token and enable notifications.
     // this.saveMessagingDeviceToken();
-  // } else { // User is signed out!
+  } else {
     // Hide user's profile and sign-out button.
-    // this.userName.setAttribute('hidden', 'true');
-    // this.userPic.setAttribute('hidden', 'true');
-    // this.signOutButton.setAttribute('hidden', 'true');
+    this.userName.setAttribute('hidden', 'true');
+    this.userPic.setAttribute('hidden', 'true');
+    this.signOutButton.setAttribute('hidden', 'true');
 
     // Show sign-in button.
-    // this.signInButton.removeAttribute('hidden');
-  // }
+    this.signInButton.removeAttribute('hidden');
+  }
 };
 
 // Returns true if user is signed-in. Otherwise false and displays a message.
@@ -656,6 +709,8 @@ window.onload = function() {
     document.getElementById("Group").click();
   } else if (type == "Event") {
     document.getElementById("Event").click();
+  } else if (type== "Community"){
+    document.getElementById("Community").click();
   }
   window.friendlyChat = new FriendlyChat();
 

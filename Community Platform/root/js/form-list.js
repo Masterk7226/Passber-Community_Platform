@@ -1,5 +1,92 @@
 // Form List
 // By MAK Kai Chung
+var communityID = $.urlParam("communityID");
+var ref = firebase.database().ref("Community/" + communityID + "/FormSet");
+
+var templates = [];
+try {
+    templates = JSON.parse(localStorage["form-templates"]);
+} catch (error) {
+    var jsonObject = [{
+        "memberType": "Basic Form",
+        "fieldSet": [{
+            "type": "first_name",
+            "data": {
+                label: "First Name",
+                "data-type": 1,
+                isRequired: true,
+                "min-length": 1,
+                "max-length": 64,
+                regex: '^[A-z\\u4E00-\\u9FFF\\u3400-\\u4DFF\\s ]*$'
+            }
+        }, {
+            "type": "last_name",
+            "data": {
+                label: "Last Name",
+                "data-type": 1,
+                isRequired: true,
+                "min-length": 1,
+                "max-length": 64,
+                regex: '^[A-z\\u4E00-\\u9FFF\\u3400-\\u4DFF\\s ]*$'
+            }
+        }, {
+            "type": "email",
+            "data": {
+                label: "Email",
+                "data-type": 0,
+                isRequired: true,
+                "min-length": 4,
+                "max-length": 320,
+                regex: '^\\w+@[a-zA-Z_]+?\\.[a-zA-Z]{2,3}$'
+            }
+        }, {
+            "type": "phone_number",
+            "data": {
+                label: "Phone Number",
+                "data-type": 2,
+                isRequired: true,
+                "min-length": 8,
+                "max-length": 17,
+                regex: '^[0-9]*$'
+            }
+        }],
+        "isActivated": false
+    }];
+
+    localStorage["form-templates"] = JSON.stringify(jsonObject);
+    templates = JSON.parse(localStorage["form-templates"]);
+}
+
+var forms = [];
+try {
+    //try {
+    //    forms = getFormSetByEventId(eventId);
+    //    if (forms === undefined) {
+    //        forms = [];
+    //    }
+    //} catch (error) {
+
+    //}
+    ref.once("value").then(function (data) {
+        if (data.val() != null) {
+            forms = data.val();
+        }
+
+        for (var i = 0; i < forms.length; i++) {
+            var memberType = forms[i].memberType;
+            var fieldSet = forms[i].fieldSet;
+            var isActivated = forms[i].isActivated;
+            var form = new FormList.Form(memberType, fieldSet, isActivated);
+
+            FormList.addFormItem(form);
+        }
+    });
+} catch (error) {
+    var jsonObject = [];
+
+    localStorage["forms"] = JSON.stringify(jsonObject);
+    forms = JSON.parse(localStorage["forms"]);
+}
 
 var FormList = function () {
     this.formList = $("#form-list");
@@ -205,10 +292,10 @@ FormList.prototype.addFormItem = function (form) {
         "data-id": id
     });
     console.log(form.isActivated, dom)
-    if (form.isActivated) {
+    if(form.isActivated){
         dom.addClass("activated");
     }
-
+    
     form.setDOM(dom);
     form.setId(id);
     this.formSet[id] = form;
@@ -218,94 +305,6 @@ FormList.prototype.directToEditor = function (formID) {
     window.location.href = "dynamic-form.html?communityID=" + communityID + "&form-id=" + formID;
 };
 var FormList = new FormList();
-
-var communityID = $.urlParam("communityID"); // get community ID from url parameter
-
-// read templates from database to variable 
-var templates = [];
-try {
-    // store the template table refernce to 
-    templates = JSON.parse(localStorage["form-templates"]);
-    templateRef.once("value", function (data) {
-        var jsonObject = data.val(); // extract useful object from the data reference 
-
-        templates = jsonObject;
-    });
-} catch (error) {
-    // if the database is down or connection errors, use the local variable
-    var jsonObject = [{
-        "memberType": "Basic Form",
-        "fieldSet": [{
-            "type": "first_name",
-            "data": {
-                label: "First Name",
-                "data-type": 1,
-                isRequired: true,
-                "min-length": 1,
-                "max-length": 64,
-                regex: '^[A-z\\u4E00-\\u9FFF\\u3400-\\u4DFF\\s ]*$'
-            }
-        }, {
-            "type": "last_name",
-            "data": {
-                label: "Last Name",
-                "data-type": 1,
-                isRequired: true,
-                "min-length": 1,
-                "max-length": 64,
-                regex: '^[A-z\\u4E00-\\u9FFF\\u3400-\\u4DFF\\s ]*$'
-            }
-        }, {
-            "type": "email",
-            "data": {
-                label: "Email",
-                "data-type": 0,
-                isRequired: true,
-                "min-length": 4,
-                "max-length": 320,
-                regex: '^\\w+@[a-zA-Z_]+?\\.[a-zA-Z]{2,3}$'
-            }
-        }, {
-            "type": "phone_number",
-            "data": {
-                label: "Phone Number",
-                "data-type": 2,
-                isRequired: true,
-                "min-length": 8,
-                "max-length": 17,
-                regex: '^[0-9]*$'
-            }
-        }],
-        "isActivated": false
-    }];
-
-    localStorage["form-templates"] = JSON.stringify(jsonObject);
-    templates = JSON.parse(localStorage["form-templates"]);
-}
-
-var forms = [];
-var ref = firebase.database().ref("Community/" + communityID + "/FormSet");
-try {
-    ref.once("value").then(function (data) {
-        if (data.val() != null) {
-            forms = data.val();
-        }
-
-        for (var i = 0; i < forms.length; i++) {
-            var memberType = forms[i].memberType;
-            var fieldSet = forms[i].fieldSet;
-            var isActivated = forms[i].isActivated;
-            var form = new FormList.Form(memberType, fieldSet, isActivated);
-
-            FormList.addFormItem(form);
-        }
-    });
-} catch (error) {
-    var jsonObject = [];
-
-    localStorage["forms"] = JSON.stringify(jsonObject);
-    forms = JSON.parse(localStorage["forms"]);
-}
 
 for (var i = 0; i < templates.length; i++) {
     var memberType = templates[i].memberType;

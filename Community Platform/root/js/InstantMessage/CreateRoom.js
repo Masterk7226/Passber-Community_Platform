@@ -10,13 +10,13 @@ function createDetails() {
     var strings = {
       Members: {
         "-001M": {
-          email: "harrylai@gmail.com" // Get from where
+          email: firebase.auth().currentUser.email // Get from where
         }
       },
       Name: input_groupname,
       Role: {
         "-001R": {
-          email: "harrylai@gmail.com"
+          email: firebase.auth().currentUser.email
         }
       }
     } // End of strings
@@ -58,5 +58,5 @@ function onAuthStateChanged() {
 }
 
 window.onload = function() {
-  // onAuthStateChanged();
+  onAuthStateChanged();
 }
