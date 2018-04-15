@@ -64,7 +64,7 @@ PhotoAlbum.prototype.loadAlbum = function() {
   var communityID = url.searchParams.get("communityID");
    
   //Reference to the /ALBUM/ database path.
-  this.albumRef = this.database.ref('Community' + communityID + 'PhotoAlbum');
+  this.albumRef = this.database.ref('Community/' + communityID + '/PhotoAlbum');
   //Make sure we remove all previous listeners.
   this.albumRef.off();
 
@@ -197,7 +197,7 @@ PhotoAlbum.PHOTO_TEMPLATE =
 
 // Displays a Message in the UI.
 PhotoAlbum.prototype.displayAlbums = function(key, albumName, creator, creatorPhotoUrl) {
-  var thumbnailRef = this.database.ref('Platform/ABCClub/PhotoAlbum/' + key + '/images');
+  var thumbnailRef = this.database.ref('Community/' + communityID + '/PhotoAlbum/' + key + '/images');
 
   var result;
   var resultRef;
