@@ -181,7 +181,7 @@ firebase.auth().onAuthStateChanged(function (user) {
     }
 });
 
-$("input[type='text'], input[type='number'], textarea, select").each(function(index){
+$("input[type='text'], input[type='number'], textarea").each(function(index){
     if(!$(this).hasClass("form-control")){
         $(this).addClass("form-control");
     }
