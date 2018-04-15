@@ -1,6 +1,8 @@
 function getMAPJSON(callback){
  var dataArray = [];
- var ref = firebase.database().ref("Platform/ABCClub/EventForm");
+ var communityID = $.urlParam("communityID");
+ var communityRef = firebase.database().ref("Community/" + communityID);
+ var ref = communityRef.child("/EventSet");
  ref.on("value", function(data) { // In the Form Level
   data.forEach(function(childData) { // In the Key Level
   var feeString = childData.val().Fee;
