@@ -6,7 +6,7 @@ function PhotoAlbum() {
   var url_string = window.location.href;
   var url = new URL(url_string);
   this.communityID = url.searchParams.get("communityID");
-   if (communityID == null) {
+   if (this.communityID == null) {
     window.location.replace("../../404.html");
   }
 
