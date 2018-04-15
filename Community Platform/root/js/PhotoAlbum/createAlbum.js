@@ -5,6 +5,13 @@
 function PhotoAlbum() {
   this.checkSetup();
 
+  var url_string = window.location.href;
+  var url = new URL(url_string);
+  this.communityID = url.searchParams.get("communityID");
+   if (this.communityID == null) {
+    window.location.replace("../../404.html");
+  }
+  
   // Shortcuts to DOM Elements.
   this.submitButton = document.getElementById('submit');
   this.nameInput = document.getElementById('name');
@@ -43,7 +50,7 @@ PhotoAlbum.prototype.initFirebase = function() {
 // Loads chat messages history and listens for upcoming ones.
 PhotoAlbum.prototype.loadAlbum = function() {
   // Reference to the /messages/ database path.
-  this.albumsRef = this.database.ref('Platform/ABCClub/PhotoAlbum');
+  this.albumsRef = this.database.ref('Community/' + this.communityID + '/PhotoAlbum');
   // Make sure we remove all previous listeners.
   this.albumsRef.off();
 };
