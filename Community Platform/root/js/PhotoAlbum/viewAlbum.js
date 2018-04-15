@@ -64,7 +64,7 @@ PhotoAlbum.prototype.loadAlbum = function() {
   var communityID = url.searchParams.get("communityID");
    
   //Reference to the /ALBUM/ database path.
-  this.albumRef = this.database.ref('Platform' + communityID + 'PhotoAlbum');
+  this.albumRef = this.database.ref('Community' + communityID + 'PhotoAlbum');
   //Make sure we remove all previous listeners.
   this.albumRef.off();
 
