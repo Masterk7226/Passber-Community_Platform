@@ -18,6 +18,13 @@
 // Initializes PhotoAlbum.
 function PhotoAlbum() {
   this.checkSetup();
+  var url_string = window.location.href;
+  var url = new URL(url_string);
+  var communityID = url.searchParams.get("communityID");
+   if (communityID == null) {
+    window.location.replace("404.html");
+  }
+  
 
   // Shortcuts to DOM Elements.
   //Album element
@@ -52,19 +59,23 @@ PhotoAlbum.prototype.initFirebase = function() {
 
 // Loads chat album history and listens for upcoming ones.
 PhotoAlbum.prototype.loadAlbum = function() {
+  var url_string = window.location.href;
+  var url = new URL(url_string);
+  var communityID = url.searchParams.get("communityID");
+   
   //Reference to the /ALBUM/ database path.
-  this.albumRef = this.database.ref('Platform/ABCClub/PhotoAlbum');
+  this.albumRef = this.database.ref('Platform' + communityID + 'PhotoAlbum');
   //Make sure we remove all previous listeners.
   this.albumRef.off();
 
-  // Loads the last 30 photos and listen for new ones.
+  // Loads the last 90 albums and listen for new ones.
   var setPhoto = function(data) {
     var val = data.val();
     this.displayAlbums(data.key, val.albumName, val.creator, val.creatorPhotoUrl, val.child_added);
   }.bind(this);
 
-  this.albumRef.limitToLast(30).on('child_added', setPhoto);
-  this.albumRef.limitToLast(30).on('child_changed', setPhoto);
+  this.albumRef.limitToLast(90).on('child_added', setPhoto);
+  this.albumRef.limitToLast(90).on('child_changed', setPhoto);
 };
 
 PhotoAlbum.prototype.setImageUrlForHref = function(imageUri, aElement) {
