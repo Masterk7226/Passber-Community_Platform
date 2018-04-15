@@ -4,15 +4,26 @@
 
 .content-container {
     min-width: 65%;
+}
+
+.fit-container {
+    width: fit-content;
+}
+
+.content-container,
+.fit-container {
     background-color: rgb(218, 218, 218);
     opacity: 0.8;
     box-shadow: 0 0 0.8823em 0 rgba(0, 0, 0, .5);
 }
 
-#geo-mapping, #instant-message{
+#geo-mapping,
+#instant-message {
     font-size: 24px;
     opacity: 0.8;
 }
-#geo-mapping:hover, #instant-message:hover{
+
+#geo-mapping:hover,
+#instant-message:hover {
     opacity: 1;
 }

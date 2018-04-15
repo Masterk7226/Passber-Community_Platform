@@ -173,8 +173,16 @@ var user = null;
 firebase.auth().onAuthStateChanged(function (user) {
     window.user = user;
     if (user != null) {
+        var personIcon = $('<i class="material-icons">person</i>');
+        $('#user-identity').prepend(personIcon).text(user.email);
         $('.login-controls').show();
     } else {
         $('.account-management').show();
+    }
+});
+
+$("input[type='text'], input[type='number'], textarea, select").each(function(index){
+    if(!$(this).hasClass("form-control")){
+        $(this).addClass("form-control");
     }
 });
