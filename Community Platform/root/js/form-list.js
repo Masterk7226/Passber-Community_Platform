@@ -12,42 +12,42 @@ try {
         "fieldSet": [{
             "type": "first_name",
             "data": {
-                "label": "First Name",
+                label: "First Name",
                 "data-type": 1,
-                "isRequired": true,
+                isRequired: true,
                 "min-length": 1,
                 "max-length": 64,
-                "regex": "[aZ].*"
+                regex: '^[A-z\s]*$'
             }
         }, {
             "type": "last_name",
             "data": {
-                "label": "Last Name",
+                label: "Last Name",
                 "data-type": 1,
-                "isRequired": true,
+                isRequired: true,
                 "min-length": 1,
                 "max-length": 64,
-                "regex": "[aZ].*"
+                regex: '^[A-z\s]*$'
             }
         }, {
             "type": "email",
             "data": {
-                "label": "Email",
+                label: "Email",
                 "data-type": 0,
-                "isRequired": true,
+                isRequired: true,
                 "min-length": 4,
                 "max-length": 320,
-                "regex": "^(([^<>()[]\\.,;:s@\"]+(.[^<>()[]\\.,;:s@\"]+)*)|(\".+\"))@(([[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}])|(([a-zA-Z-0-9]+.)+[a-zA-Z]{2,}))$"
+                regex: '^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$'
             }
         }, {
             "type": "phone_number",
             "data": {
-                "label": "Phone Number",
+                label: "Phone Number",
                 "data-type": 2,
-                "isRequired": true,
-                "min-length": 9,
+                isRequired: true,
+                "min-length": 8,
                 "max-length": 17,
-                "regex": "[0-9].*"
+                regex: '^[0-9]*$'
             }
         }],
         "isActivated": false

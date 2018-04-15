@@ -357,11 +357,14 @@
             try {
                 console.log(user.uid, organizerID)
                 if (user.uid == organizerID) {
+                    isOrganizer = true;
                     $("#manage-community").removeClass("disabled")
                         .on("click", function () {
                             window.location.replace("manage-community.html?communityID=" + communityID);
                         });
-                    isMember = true;
+
+                    var joinButton = $("#join-community");
+                    joinButton.addClass("disabled");
                 }
             } catch (error) {
 
@@ -379,7 +382,6 @@
             var memberRecord = data.val();
             var joinButton = $("#join-community");
 
-            console.log(user.uid == organizerID)
             if (memberRecord == null && !isOrganizer) {
                 isMember = false;
                 joinButton.removeClass("disabled");

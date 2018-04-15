@@ -3,7 +3,6 @@
 var communityID = $.urlParam("communityID");
 var eventID = $.urlParam("eventID");
 var ref = firebase.database().ref("Community/" + communityID + "/Event/FormSet");
-
 var templates = [];
 try {
     templates = JSON.parse(localStorage["form-templates"]);
@@ -13,42 +12,42 @@ try {
         "fieldSet": [{
             "type": "first_name",
             "data": {
-                "label": "First Name",
+                label: "First Name",
                 "data-type": 1,
-                "isRequired": true,
+                isRequired: true,
                 "min-length": 1,
                 "max-length": 64,
-                "regex": "[aZ].*"
+                regex: '^[A-z\s]*$'
             }
         }, {
             "type": "last_name",
             "data": {
-                "label": "Last Name",
+                label: "Last Name",
                 "data-type": 1,
-                "isRequired": true,
+                isRequired: true,
                 "min-length": 1,
                 "max-length": 64,
-                "regex": "[aZ].*"
+                regex: '^[A-z\s]*$'
             }
         }, {
             "type": "email",
             "data": {
-                "label": "Email",
+                label: "Email",
                 "data-type": 0,
-                "isRequired": true,
+                isRequired: true,
                 "min-length": 4,
                 "max-length": 320,
-                "regex": "^(([^<>()[]\\.,;:s@\"]+(.[^<>()[]\\.,;:s@\"]+)*)|(\".+\"))@(([[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}])|(([a-zA-Z-0-9]+.)+[a-zA-Z]{2,}))$"
+                regex: '^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$'
             }
         }, {
             "type": "phone_number",
             "data": {
-                "label": "Phone Number",
+                label: "Phone Number",
                 "data-type": 2,
-                "isRequired": true,
-                "min-length": 9,
+                isRequired: true,
+                "min-length": 8,
                 "max-length": 17,
-                "regex": "[0-9].*"
+                regex: '^[0-9]*$'
             }
         }],
         "isActivated": false
@@ -76,7 +75,8 @@ try {
         for (var i = 0; i < forms.length; i++) {
             var memberType = forms[i].memberType;
             var fieldSet = forms[i].fieldSet;
-            var form = new FormList.Form(memberType, fieldSet);
+            var isActivated = forms[i].isActivated;
+            var form = new FormList.Form(memberType, fieldSet, isActivated);
 
             FormList.addFormItem(form);
         }
@@ -87,6 +87,7 @@ try {
     localStorage["forms"] = JSON.stringify(jsonObject);
     forms = JSON.parse(localStorage["forms"]);
 }
+
 
 var FormList = function () {
     this.formList = $("#form-list");
@@ -130,10 +131,11 @@ var FormList = function () {
     });
 
     // Form Item
-    this.Form = function (memberType, fieldSet) {
+    this.Form = function (memberType, fieldSet, isActivated) {
         this.type = "form";
         this.memberType = memberType;
         this.fieldSet = fieldSet;
+        this.isActivated = isActivated;
     };
     this.Form.prototype.getMemberType = function () {
         return this.memberType;
@@ -276,6 +278,7 @@ FormList.prototype.addTemplate = function (template) {
         "data-form-id": id,
         "data-id": id
     });
+
     template.setDOM(dom);
     template.setId(id);
     this.templateSet[id] = template;
@@ -289,6 +292,11 @@ FormList.prototype.addFormItem = function (form) {
         "data-form-id": id,
         "data-id": id
     });
+    console.log(form.isActivated, dom)
+    if(form.isActivated){
+        dom.addClass("activated");
+    }
+    
     form.setDOM(dom);
     form.setId(id);
     this.formSet[id] = form;
