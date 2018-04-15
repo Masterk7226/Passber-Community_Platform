@@ -1,18 +1,3 @@
-/**
- * Copyright 2015 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 'use strict';
 
 // Initializes FriendlyChat.
@@ -32,33 +17,25 @@ function FriendlyChat() {
   this.signInButton = document.getElementById('sign-in');
   this.signOutButton = document.getElementById('sign-out');
   this.signInSnackbar = document.getElementById('must-signin-snackbar');
-
-
   this.delete = document.getElementById('delMember');
-  this.delete.addEventListener('click', this.DelTheMember.bind(this));
-
-  // this.creategroup = document.getElementById('CreateChatRoom');
   this.loadmoremsg = document.getElementById('loadMoreMsg');
   this.listRoom = document.getElementById('ListRoom');
   this.addMember = document.getElementById('addMember');
   this.loadText = document.getElementById('loadText');
+  this.btnExit = document.getElementById('btnExit');
+  var btn_community = document.getElementById("Community");
+  var btn_Group = document.getElementById("Group");
+  var btn_event = document.getElementById("Event");
 
   // Saves message on form submit.
   this.messageForm.addEventListener('submit', this.saveMessage.bind(this));
   this.signOutButton.addEventListener('click', this.signOut.bind(this));
   this.signInButton.addEventListener('click', this.signIn.bind(this));
 
-
-  //Setting 2
+  // Adding the eventlistener to releated DOM
   this.addMember.addEventListener('click', this.AddTheMember.bind(this));
-  // this.creategroup.addEventListener('click', this.CreateRoom.bind(this));
-  // this.loadText.addEventListener('click', this.loadingText.bind(this));
-
-
-  //Setting 3
-  var btn_community = document.getElementById("Community");
-  var btn_Group = document.getElementById("Group");
-  var btn_event = document.getElementById("Event");
+  this.delete.addEventListener('click', this.DelTheMember.bind(this));
+  this.btnExit.addEventListener('click', this.ExitGroup.bind(this));
   btn_community.addEventListener('click', function() {
     window.location = '?type=Community'
   });
@@ -92,37 +69,14 @@ FriendlyChat.prototype.initFirebase = function() {
   this.auth = firebase.auth();
   this.database = firebase.database();
   this.storage = firebase.storage();
+
   // Initiates Firebase auth and listen to auth state changes.
-  // this.onAuthStateChanged();
   firebase.auth().onAuthStateChanged(this.onAuthStateChanged.bind(this));
 };
 
-// FriendlyChat.prototype.getType = function() {
-//   var url_string = window.location.href;
-//   var url = new URL(url_string);
-//   var type = url.searchParams.get("type");
-//   this.type = type;
-// }
-
-FriendlyChat.prototype.prepareLoad = function() {
-  var url_string = window.location.href;
-  var url = new URL(url_string);
-  var id = url.searchParams.get("id");
-  var type = url.searchParams.get("type");
-
-  var Gref = firebase.database().ref("InstantMessage/Messages/" + type);
-  Gref.on("value", function(data) {
-    data.forEach(function(childData) {
-      if (childData.val().Name == id) {
-
-      }
-    });
-  });
-
-}
-
 // Loads chat messages history and listens for upcoming ones.
 FriendlyChat.prototype.loadMessages = function(Ref) {
+  // Getting Param from url
   var url_string = window.location.href;
   var url = new URL(url_string);
   var id = url.searchParams.get("id");
@@ -131,7 +85,6 @@ FriendlyChat.prototype.loadMessages = function(Ref) {
 
   if (id != null) {
     this.messagesRef = firebase.database().ref('InstantMessage/Messages/' + type + "/" + ref + '/Message');
-    console.log("log: " + this.messagesRef);
 
     // Make sure we remove all previous listeners.
     this.messagesRef.off();
@@ -140,8 +93,6 @@ FriendlyChat.prototype.loadMessages = function(Ref) {
       var val = data.val();
       this.displayMessage(data.key, val.name, val.text, val.photoUrl, val.imageUrl);
     }.bind(this);
-    // this.messagesRef.limitToLast(8).on('child_added', setMessage);
-    // this.messagesRef.limitToLast(8).on('child_changed', setMessage);
     this.messagesRef.on('child_added', setMessage);
     this.messagesRef.on('child_changed', setMessage);
     this.loadNameandUser(id);
@@ -149,14 +100,13 @@ FriendlyChat.prototype.loadMessages = function(Ref) {
 };
 
 FriendlyChat.prototype.loadNameandUser = function(id) {
+  // Getting Param from url
   var url_string = window.location.href;
   var url = new URL(url_string);
   var ids = url.searchParams.get(id);
   var type = url.searchParams.get("type");
 
   var Gref = firebase.database().ref("InstantMessage/Messages/" + type);
-  // var hidden_name = document.getElementById("hidden_id");
-
   Gref.once("value", function(data) {
     data.forEach(function(childData) {
       if (childData.val().Name == id) {
@@ -168,7 +118,7 @@ FriendlyChat.prototype.loadNameandUser = function(id) {
   });
 
   function setName(Name) {
-    //Load Name
+    //Load Name List
     var names = firebase.database().ref("InstantMessage/Details/" + type + "/" + Name);
     names.on("value", function(data) {
       var text = document.createElement("p");
@@ -176,7 +126,7 @@ FriendlyChat.prototype.loadNameandUser = function(id) {
       document.getElementById("TempGroupName").appendChild(text);
     });
 
-    //Load Members
+    //Load Members List
     var members = firebase.database().ref("InstantMessage/Details/" + type + "/" + Name + "/Members");
     members.once("value", function(data) {
       data.forEach(function(childData) {
@@ -188,20 +138,16 @@ FriendlyChat.prototype.loadNameandUser = function(id) {
   }
 
 
-  function setHidden() {
+  function setHidden() { // Setting the Manage Group Display or not
+    // Getting Param from url
     var url_string = window.location.href;
     var url = new URL(url_string);
     var type = url.searchParams.get("type");
     var idr = url.searchParams.get("id");
 
-
   var ref = firebase.database().ref("InstantMessage/Details/" + type + "/" + idr + "/Role");
-
-
   ref.once("value",function(data) {
-
     data.forEach(function (childData) {
-
       if (childData.val().email == firebase.auth().currentUser.email) { //Tmp
         document.getElementById("Role").style.display="block";
       } else {
@@ -210,47 +156,30 @@ FriendlyChat.prototype.loadNameandUser = function(id) {
     });
   });
 }
-
-
 }
 
-// FriendlyChat.prototype.setReference = function() {
-//   var url_string = window.location.href;
-//   var url = new URL(url_string);
-//   var id = url.searchParams.get("id");
-//
-//    if (id != null) {
-//      document.getElementById("hidden_id").value = id;
-//    }
-// }
+// Exit the Group
+FriendlyChat.prototype.ExitGroup = function() {
+  // Getting Param from url
+  var url_string = window.location.href;
+  var url = new URL(url_string);
+  var type = url.searchParams.get("type");
+  var idr = url.searchParams.get("id");
+  var reference = url.searchParams.get("ref");
 
-// FriendlyChat.prototype.ListPerson = function() {
-//
-// }
+  var ref = firebase.database().ref("InstantMessage/Details/"+type+"/"+idr+"/Members");
+  ref.once("value",function(data){
+    data.forEach(function(childData) {
+      if (childData.val().email == firebase.auth().currentUser.email) {
+        firebase.database().ref("InstantMessage/Details/"+type+"/"+idr+"/Members/"+childData.key).remove();
+        alert("You are Exiting the group.");
+        window.location.reload();
+      }
+    });
+  });
+}
 
-// FriendlyChat.prototype.ListGroup = function() {
-//   var ref = firebase.database().ref("InstantMessage/Details/Group");
-//   var GroupList = document.getElementById("Group_Tab");
-//
-//   ref.once("value").then(function(GroupData) {
-//     GroupData.forEach(function(childData) {
-//       handleEventList(childData.val().Name, childData.key);
-//     });
-//   });
-//
-//   function handleEventList(Name, key) {
-//     var hyper = document.createElement("a");
-//     var li = document.createElement("li");
-//     var button = document.createElement("button");
-//
-//     button.appendChild(hyper);
-//     li.appendChild(button);
-//     hyper.appendChild(document.createTextNode(Name));
-//     hyper.setAttribute("href", "?type=Group&id=" + key);
-//     document.getElementById("Group_Tab").appendChild(li);
-//   }
-// }
-//=======================================================================
+// List all the group in the Group tab
 FriendlyChat.prototype.ListGroup2 = function() {
   var makeRef = firebase.database().ref("InstantMessage/Messages/Group");
   makeRef.once("value", function(Refdata) {
@@ -261,7 +190,6 @@ FriendlyChat.prototype.ListGroup2 = function() {
 
   function Ref(Name, id) {
   var Nameref = firebase.database().ref("InstantMessage/Details/Group/"+Name+'/Members');
-
   Nameref.once("value", function(NameChild) {
     NameChild.forEach(function(childData) {
       if (childData.val().email == firebase.auth().currentUser.email) { //Tmp
@@ -272,14 +200,12 @@ FriendlyChat.prototype.ListGroup2 = function() {
       }
     });
   });
-
   }
 
-  function handleEventList(Name, key, id) {
+  function handleEventList(Name, key, id) { // Generating Button
     var hyper = document.createElement("a");
     var li = document.createElement("li");
     var button = document.createElement("button");
-
     button.appendChild(hyper);
     li.appendChild(button);
     hyper.appendChild(document.createTextNode(Name));
@@ -288,7 +214,8 @@ FriendlyChat.prototype.ListGroup2 = function() {
     document.getElementById("Group_Tab").appendChild(li);
   }
 }
-//==========================================================
+
+// List all the group in the Community tab
 FriendlyChat.prototype.ListEvent = function() {
   var makeRef = firebase.database().ref("InstantMessage/Messages/Event");
   makeRef.once("value", function(Refdata) {
@@ -299,7 +226,6 @@ FriendlyChat.prototype.ListEvent = function() {
 
   function Ref(Name, id) {
   var Nameref = firebase.database().ref("InstantMessage/Details/Event/"+Name+'/Members');
-
   Nameref.once("value", function(NameChild) {
     NameChild.forEach(function(childData) {
       if (childData.val().email == firebase.auth().currentUser.email) { //Tmp
@@ -310,14 +236,12 @@ FriendlyChat.prototype.ListEvent = function() {
       }
     });
   });
-
   }
 
-  function handleEventList(Name, key,id) {
+  function handleEventList(Name, key,id) { // Generating Button
     var hyper = document.createElement("a");
     var li = document.createElement("li");
     var button = document.createElement("button");
-
     button.appendChild(hyper);
     li.appendChild(button);
     hyper.appendChild(document.createTextNode(Name));
@@ -326,8 +250,8 @@ FriendlyChat.prototype.ListEvent = function() {
     document.getElementById("Event_Tab").appendChild(li);
   }
 }
-//===================================================================================
 
+// List all the group in the Community tab
 FriendlyChat.prototype.ListCommunity = function() {
   var makeRef = firebase.database().ref("InstantMessage/Messages/Community");
   makeRef.once("value", function(Refdata) {
@@ -338,7 +262,6 @@ FriendlyChat.prototype.ListCommunity = function() {
 
   function Ref(Name, id) {
   var Nameref = firebase.database().ref("InstantMessage/Details/Community/"+Name+'/Members');
-
   Nameref.once("value", function(NameChild) {
     NameChild.forEach(function(childData) {
       if (childData.val().email == firebase.auth().currentUser.email) { //Tmp
@@ -351,11 +274,10 @@ FriendlyChat.prototype.ListCommunity = function() {
   });
   }
 
-  function handleEventList(Name, key,id) {
+  function handleEventList(Name, key,id) { // Generating Button
     var hyper = document.createElement("a");
     var li = document.createElement("li");
     var button = document.createElement("button");
-
     button.appendChild(hyper);
     li.appendChild(button);
     hyper.appendChild(document.createTextNode(Name));
@@ -365,33 +287,23 @@ FriendlyChat.prototype.ListCommunity = function() {
   }
 }
 
-
-
 // Load and List the Group (temp: List out all the Group)
 FriendlyChat.prototype.ListAllRoom = function() {
-  //Community
   this.ListCommunity();
-  //Group
   this.ListGroup2();
-  //Event
   this.ListEvent();
 };
 
-// Add a Member
+// Add a Member into Group
 FriendlyChat.prototype.AddTheMember = function() {
+  // Getting Param from url
   var url_string = window.location.href;
   var url = new URL(url_string);
   var id = url.searchParams.get("id");
   var type = url.searchParams.get("type");
-  // var gn = "";
 
-  // var Gref = firebase.database().ref("IM/Messages/Group/" + id);
   var Gref = firebase.database().ref("InstantMessage/Details/"+type+"/"+id+'/Members');
-  // console.log("Gref: "+Gref);
-
-  // var addmember = this.database.ref("IM/Details/Group/" + gn + "/Members");
   var user = document.getElementById('AddUser').value;
-
   if (user != null && user != "") {
     var strings = {
       email: user
@@ -403,20 +315,20 @@ FriendlyChat.prototype.AddTheMember = function() {
   } else {
     alert("The Email field is empty!");
   }
-
 };
 
 // Delete a Member
 FriendlyChat.prototype.DelTheMember = function() {
-  var DeleteEmail = document.getElementById('DeleteUser').value;
+  // Getting Param from url
   var url_string = window.location.href;
   var url = new URL(url_string);
   var id = url.searchParams.get("id");
   var type = url.searchParams.get("type");
+
+  var DeleteEmail = document.getElementById('DeleteUser').value;
   var DeleteMemberkey = "";
 
   var Gref = firebase.database().ref("InstantMessage/Details/"+type+"/"+id+'/Members');
-
   if (DeleteEmail != null && DeleteEmail != "") {
     Gref.on("value", function(DeleteData) {
       DeleteData.forEach(function(Delete) {
@@ -425,7 +337,6 @@ FriendlyChat.prototype.DelTheMember = function() {
         }
       });
     });
-
     if (DeleteMemberkey != "") {
       Gref.child(DeleteMemberkey).remove();
       document.getElementById('DeleteUser').value = "";
@@ -434,7 +345,6 @@ FriendlyChat.prototype.DelTheMember = function() {
     } else {
       alert("Not Valid Email");
     }
-
   } else {
     alert("The Email field is empty!");
   }
@@ -449,14 +359,13 @@ FriendlyChat.prototype.saveMessage = function(e) {
     // Add a new message entry to the Firebase Database.
     // var temp = document.getElementById("GroupRef").value;
 
+    // Getting Param from url
     var url_string = window.location.href;
     var url = new URL(url_string);
     var type = url.searchParams.get("type");
     var MsgRef = url.searchParams.get("ref");
-    // var MsgRef = document.getElementById("hidden_id").value;
 
     var pushRef = this.database.ref('InstantMessage/Messages/' + type + "/" + MsgRef + '/Message');
-
     pushRef.push({
       name: currentUser, //Tmp
       text: this.messageInput.value,
@@ -470,6 +379,7 @@ FriendlyChat.prototype.saveMessage = function(e) {
     });
   }
 };
+
 // Sets the URL of the given img element with the URL of the image stored in Cloud Storage.
 FriendlyChat.prototype.setImageUrl = function(imageUri, imgElement) {
   // If the image is a Cloud Storage URI we fetch the URL.
@@ -488,10 +398,8 @@ FriendlyChat.prototype.setImageUrl = function(imageUri, imgElement) {
 FriendlyChat.prototype.saveImageMessage = function(event) {
   event.preventDefault();
   var file = event.target.files[0];
-
   // Clear the selection in the file picker input.
   this.imageForm.reset();
-
   // Check if the file is an image.
   if (!file.type.match('image.*')) {
     var data = {
@@ -501,10 +409,8 @@ FriendlyChat.prototype.saveImageMessage = function(event) {
     this.signInSnackbar.MaterialSnackbar.showSnackbar(data);
     return;
   }
-
   // Check if the user is signed-in
   if (this.checkSignedInWithMessage()) {
-
     // We add a message with a loading icon that will get updated with the shared image.
     var currentUser = this.auth.currentUser;
     this.messagesRef.push({
@@ -512,11 +418,9 @@ FriendlyChat.prototype.saveImageMessage = function(event) {
       imageUrl: FriendlyChat.LOADING_IMAGE_URL,
       photoUrl: currentUser.photoURL || '../../img/profile_placeholder.png'
     }).then(function(data) {
-
       // Upload the image to Cloud Storage.
       var filePath = currentUser.uid + '/' + data.key + '/' + file.name;
       return this.storage.ref(filePath).put(file).then(function(snapshot) {
-
         // Get the file's Storage URI and update the chat message placeholder.
         var fullPath = snapshot.metadata.fullPath;
         return data.update({
@@ -562,14 +466,8 @@ FriendlyChat.prototype.onAuthStateChanged = function(user) {
     // this.signInButton.setAttribute('hidden', 'true');
 
     // We load currently existing chant messages.
-    this.prepareLoad();
     this.ListAllRoom();
-    // this.getType();
-    // this.setReference();
     this.loadMessages();
-
-    // We save the Firebase Messaging Device token and enable notifications.
-    // this.saveMessagingDeviceToken();
   } else {
     // Hide user's profile and sign-out button.
     this.userName.setAttribute('hidden', 'true');
@@ -596,23 +494,6 @@ FriendlyChat.prototype.checkSignedInWithMessage = function() {
   this.signInSnackbar.MaterialSnackbar.showSnackbar(data);
   return false;
 };
-
-// Saves the messaging device token to the datastore.
-// FriendlyChat.prototype.saveMessagingDeviceToken = function() {
-//   firebase.messaging().getToken().then(function(currentToken) {
-//     if (currentToken) {
-//       console.log('Got FCM device token:', currentToken);
-//       // Saving the Device Token to the datastore.
-//       firebase.database().ref('/fcmTokens').child(currentToken)
-//         .set(firebase.auth().currentUser.uid);
-//     } else {
-//       // Need to request permissions to show notifications.
-//       this.requestNotificationsPermissions();
-//     }
-//   }.bind(this)).catch(function(error) {
-//     console.error('Unable to get messaging token.', error);
-//   });
-// };
 
 // Requests permissions to show notifications.
 FriendlyChat.prototype.requestNotificationsPermissions = function() {
@@ -653,11 +534,9 @@ FriendlyChat.prototype.displayMessage = function(key, name, text, picUrl, imageU
     div.setAttribute('id', key);
     this.messageList.appendChild(div);
   }
-
   if (picUrl) {
     div.querySelector('.pic').style.backgroundImage = 'url(' + picUrl + ')';
   }
-
   div.querySelector('.name').textContent = name;
   var messageElement = div.querySelector('.message');
   if (text) { // If the message is text.
@@ -704,14 +583,12 @@ window.onload = function() {
   var url_string = window.location.href;
   var url = new URL(url_string);
   var type = url.searchParams.get("type");
-
   if (type == "Group") {
     document.getElementById("Group").click();
   } else if (type == "Event") {
     document.getElementById("Event").click();
-  } else if (type== "Community"){
+  } else if (type == "Community"){
     document.getElementById("Community").click();
   }
   window.friendlyChat = new FriendlyChat();
-
 };
