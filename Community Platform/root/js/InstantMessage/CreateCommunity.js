@@ -1,6 +1,3 @@
-var btn_submit = document.getElementById("btn_submit");
-btn_submit.addEventListener('click', createNewGroup);
-
 function createDetails() {
   var key = "Null";
   var ref = firebase.database().ref("InstantMessage/Details/Group");
@@ -47,16 +44,4 @@ function createNewGroup() {
   } else {
     alert("Something Error!");
   }
-}
-
-function onAuthStateChanged() {
-  firebase.auth().onAuthStateChanged(function(user) {
-    if (!user) {
-      alert("Something Error!");
-    }
-  });
-}
-
-window.onload = function() {
-  onAuthStateChanged();
 }
