@@ -22,7 +22,7 @@ function PhotoAlbum() {
   var url = new URL(url_string);
   var communityID = url.searchParams.get("communityID");
    if (communityID == null) {
-    window.location.replace("404.html");
+    window.location.replace("../../404.html");
   }
   
 
