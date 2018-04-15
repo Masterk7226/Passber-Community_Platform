@@ -5,7 +5,7 @@ function PhotoAlbum() {
   this.checkSetup();
   var url_string = window.location.href;
   var url = new URL(url_string);
-  var communityID = url.searchParams.get("communityID");
+  this.communityID = url.searchParams.get("communityID");
    if (communityID == null) {
     window.location.replace("../../404.html");
   }
@@ -51,7 +51,7 @@ PhotoAlbum.prototype.loadAlbum = function() {
   var communityID = url.searchParams.get("communityID");
    
   //Reference to the /ALBUM/ database path.
-  this.albumRef = this.database.ref('Community/' + communityID + '/PhotoAlbum');
+  this.albumRef = this.database.ref('Community/' + this.communityID + '/PhotoAlbum');
   //Make sure we remove all previous listeners.
   this.albumRef.off();
 
@@ -91,11 +91,7 @@ PhotoAlbum.prototype.setImageUrl = function(imageUri, imgElement) {
 };
 
 PhotoAlbum.prototype.redirectCreate = function() {
-  var communityID = url.searchParams.get("communityID");
-   if (communityID == null) {
-    window.location.replace("../../404.html");
-  }
- window.location.replace("https://passber-community-platform.firebaseapp.com/html/PhotoAlbum/album_create.html?" + communityID);
+ window.location.replace("https://passber-community-platform.firebaseapp.com/html/PhotoAlbum/album_create.html?" + this.communityID);
 };
 
 // Signs-in Friendly Chat.
@@ -192,7 +188,7 @@ PhotoAlbum.PHOTO_TEMPLATE =
 
 // Displays a Message in the UI.
 PhotoAlbum.prototype.displayAlbums = function(key, albumName, creator, creatorPhotoUrl) {
-  var thumbnailRef = this.database.ref('Community/' + communityID + '/PhotoAlbum/' + key + '/images');
+  var thumbnailRef = this.database.ref('Community/' + this.communityID + '/PhotoAlbum/' + key + '/images');
 
   var result;
 
