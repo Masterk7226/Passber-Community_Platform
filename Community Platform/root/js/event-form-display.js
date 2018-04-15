@@ -1498,50 +1498,51 @@ DynamicForm = new DynamicForm();
 var communityID = $.urlParam("communityID");
 var eventID = $.urlParam("eventID");
 var ref = firebase.database().ref("Community/" + communityID);
-// var formID = $.urlParam("form-id");
 var formDataObject = {};
-try {
-    // formDataObject = JSON.parse(localStorage["forms"])[0];
+var userID;
+firebase.auth().onAuthStateChanged(function (user) {
+    if (user != null) {
+        try {
+            userID = user.uid;
+            ref.child("MemberRecord/" + userID + "/memberTypeID").once("value", function (data) {
+                var memberTypeID = data.val();
 
-    // DynamicForm.formController.setFormDataObject(formDataObject);
-    // DynamicForm.formController.loadFormFromDataObject();
-    ref.child("MemberRecord/TestMemberID/memberTypeID").once("value", function (data) {
-        var memberTypeID = data.val();
+                if (memberTypeID != null) {
+                    ref.child("MemberType/" + memberTypeID + "/EventAssignment/" + eventID + "/selectedForm").once("value", function (data) {
+                        var formID = data.val();
+                        console.log(formID)
+                        if (formID != null) {
+                            ref.child("Event/FormSet/" + formID).once("value", function (data) {
+                                formDataObject = data.val();
 
-        if (memberTypeID != null) {
-            ref.child("MemberType/" + memberTypeID + "/EventAssignment/" + eventID + "/selectedForm").once("value", function (data) {
-                var formID = data.val();
-                console.log(formID)
-                if (formID != null) {
-                    ref.child("Event/FormSet/" + formID).once("value", function (data) {
-                        formDataObject = data.val();
+                                DynamicForm.formController.setFormDataObject(formDataObject);
+                                DynamicForm.formController.loadFormFromDataObject();
 
-                        DynamicForm.formController.setFormDataObject(formDataObject);
-                        DynamicForm.formController.loadFormFromDataObject();
-
-                        $("#back-button").on("click.back-to-selection", function () {
-                            window.location.replace("event-info.html?communityID=" + communityID + "&eventID=" + eventID);
-                        });
-                        $("#submit-form").on("click.submit-form", function () {
-                            var form = DynamicForm.formSet.formSet[0];
-                            var values = form.getFormValues();
-                            var memberRecord = {
-                                memberTypeID: memberTypeID,
-                                values: values
-                            }
-                            var passedValidation = DynamicForm.formController.validateFields();
-
-                            if (passedValidation) {
-                                ref.child("EventSet/" + eventID + "/EventRecord/TestMemberID").set(memberRecord).then(function () {
+                                $("#back-button").on("click.back-to-selection", function () {
                                     window.location.replace("event-info.html?communityID=" + communityID + "&eventID=" + eventID);
                                 });
-                            }
-                        });
+                                $("#submit-form").on("click.submit-form", function () {
+                                    var form = DynamicForm.formSet.formSet[0];
+                                    var values = form.getFormValues();
+                                    var memberRecord = {
+                                        memberTypeID: memberTypeID,
+                                        values: values
+                                    }
+                                    var passedValidation = DynamicForm.formController.validateFields();
+
+                                    if (passedValidation) {
+                                        ref.child("EventSet/" + eventID + "/EventRecord/" + userID).set(memberRecord).then(function () {
+                                            window.location.replace("event-info.html?communityID=" + communityID + "&eventID=" + eventID);
+                                        });
+                                    }
+                                });
+                            });
+                        }
                     });
                 }
             });
+        } catch (error) {
+            console.log(error)
         }
-    });
-} catch (error) {
-    console.log(error)
-}
+    }
+});

@@ -1,3 +1,5 @@
+$("#nav-bar-container").load("../html/nav-bar.html")
+
 var $formLogin = $('#login-form');
 var $formLost = $('#lost-form');
 var $formRegister = $('#register-form');
@@ -138,6 +140,10 @@ function onAuthStateChanged() {
     });
 }
 
+$('#my-profile').on("click", function(){
+    window.location.replace("../html/my-profile.html");
+});
+
 $('#sign-out').click(function () {
     firebase.auth().signOut().then(function () {
         window.location.reload();
@@ -148,6 +154,7 @@ $(".login-controls, #account-management").hide();
 var user = null;
 firebase.auth().onAuthStateChanged(function (user) {
     window.user = user;
+    console.log($('.login-controls'), $('#account-management'))
     if (user != null) {
         $('.login-controls').show();
     } else {

@@ -28,69 +28,115 @@
     <!-- JSPDF -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js" async></script>
 
+    <!-- Custom Lib -->
+    <script src="../js/custom-lib.js"></script>
+
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase-storage.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.11.0/firebase.js"></script>
     <script src="../js/form-set-firebase.js"></script>
     <script src="../js/init-firebase.js"></script>
 
     <link rel="stylesheet" href="../css/dynamic-form.css">
     <style>
-        #community-list-container {
-            min-width: 80%;
-            background-color: rgb(218, 218, 218);
-        }
-
-        #header {
-            display: flex;
-            width: fit-content;
-            text-align: center;
-            font-size: 22px;
-            font-weight: 700;
-            margin: 5px auto auto auto;
-            padding: 5px 5px;
-        }
-
-        .community-container {
+        #community-info-container {
             background-color: #ffffff;
-            cursor: pointer;
+            padding: 1% 1%;
+        }
+
+        #save-member-type {
+            float: right;
+        }
+
+        .member-type-item {
+            display: flex;
+            align-items: center;
             margin-bottom: 5px;
+        }
+
+        .form-selection {
+            margin-left: auto;
+        }
+
+        .remove-member-type {
+            opacity: 0.5;
+            margin-left: auto;
+            cursor: pointer;
+        }
+
+        .remove-member-type:hover {
+            opacity: 1;
+        }
+
+        .member-type-item .member-type-input {
             width: 100%;
-            padding: 10px 10px;
+            margin-right: 5px;
         }
 
-        .community-container:hover {
-            background-color: rgb(228, 228, 228);
+        .event-item {
+            cursor: pointer;
         }
 
-        .community-container:active {
-            background-color: rgb(204, 204, 204);
+        .event-item:hover {
+            background-color: rgb(160, 160, 160);
         }
 
-        .community-name {
+        .event-item:active {
+            background-color: rgb(135, 135, 135);
+        }
+
+        .event-name {
             display: inline-flex;
-            font-size: 20px;
+            margin-top: 5px;
         }
 
-        .manage-community,
-        #create-community {
+        .event-duration {
+            margin-top: 5px;
+        }
+
+        .manage-event,
+        #create-event {
             display: inline-flex;
             justify-content: center;
             align-items: center;
             float: right;
-            margin-left: 10px;
+            margin-top: 5px;
         }
 
-        #create-community {
-            margin: 10px;
+        .manage-event {
+            margin-top: 0;
+        }
+
+        #back-button {
+            margin-top: 5px;
+        }
+
+        .event-item {
+            background-color: rgb(213, 208, 208);
+            padding: 5px;
+            margin-bottom: 5px;
+        }
+
+        #join-community,
+        #manage-community {
+            float: right;
+        }
+
+        #join-community.disabled,
+        #manage-community.disabled {
+            display: none;
         }
 
         i {
             font-size: inherit !important;
         }
-    </style>
 
+        fieldset {
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <script src="../js/login.js"></script>
 </head>
@@ -243,15 +289,34 @@
     </div>
     <!-- END # MODAL LOGIN -->
 
-    <div id="body-container" style="height: fit-content; min-height: 100vh; display: flex; align-items: center;">
-
-        <div style="display:flex;height:100%;width:100%;align-items:center;justify-content:center">
-            <div id="community-list-container" class="content-container">
-                <div id="header">Recommanded Community</div>
-
-                <div id="community-list">
-
-                </div>
+    <div id="body-container">
+        <div style="display:flex;min-height:100%;width:100%;align-items:center;justify-content:center">
+            <div id="community-info-container" class="content-container">
+                <fieldset>
+                    <legend>My Profile:</legend>
+                    <div class="user-fName">First Name:
+                        <input type="text" />
+                    </div>
+                    <div class="user-lName">Last Name:
+                        <input type="text" />
+                    </div>
+                    <div class="user-email">Email Address:
+                        <input type="text" />
+                    </div>
+                    <div class="user-phone">Phone Number:
+                        <input type="text" />
+                    </div>
+                    <div class="user-crPassword">Current Password:
+                        <input type="password" />
+                    </div>
+                    <div class="user-nPassword">New Password:
+                        <input type="password" />
+                    </div>
+                    <div class="user-cfPassword">Confirm Password:
+                        <input type="password" />
+                    </div>
+                    <button id="save-profile">Save</button>
+                </fieldset>
             </div>
         </div>
     </div>
@@ -260,7 +325,6 @@
     <script type="text/javascript" src="../js/create-event.js" defer></script>
 
 </body>
-
 <!-- Navbar CSS -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Josefin+Sans:300,400|Roboto:300,400,500">
 <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
@@ -277,45 +341,22 @@
 <link href="../css/page-style.css" rel="stylesheet">
 
 <script>
-    var loadCommunitiesFromDatabase = function () {
-        let ref = firebase.database().ref("Community").orderByChild("isActivated").equalTo(true);
-
-        function createCommunityItem(data) {
-            let communityList = $("#community-list");
-            let communityObjectSet = data.val();
-
-            communityList.empty();
-            for (var key = [] in communityObjectSet) {  
-                let communityObject = communityObjectSet[key];
-                let community = $('<div class="community-container">').attr({
-                    "data-id": key
-                });
-                community.on("click.view-community-info", {
-                    communityID: key
-                }, function (event) {
-                    var communityID = event.data.communityID;
-
-                    window.location.replace("community-info.html?communityID=" + communityID);
-                });
-                let name = $('<div class="community-name">').text(communityObject.name);
-                // let address = $('<div class="community-address">').text(communityObject.address);
-                // let phone = $('<div class="community-phone">').text(communityObject.phone);
-                let description = $('<div class="community-description">').append($('<pre>').text(communityObject.description));
-
-                community.append(name).append(description);
-
-                communityList.append(community);
-            }
-        }
-
-        ref.on("value", function (data) {
-            createCommunityItem(data);
-        });
-        ref.on("child_changed", function () {
-
-        });
+    var loadMemberTypeList = function () {
+        $(".user-fName input").val(user.name);
+        $(".user-lName input").val(user.input);
+        $(".user-email input").val(user.email);
+        $(".user-phone input").val(user.phone);
     }
-    loadCommunitiesFromDatabase();
+    $("#save-profile").on("click.save-profile", function () {
+        var fName = $(".user-fName input").val();
+        var lName = $(".user-lName input").val();
+        var email = $(".user-email input").val();
+        var phone = $(".user-phone input").val();
+    });
+    firebase.auth().onAuthStateChanged(function (user) {
+        window.user = user;
+        loadUserInfo();
+    });
 </script>
 
 </html>

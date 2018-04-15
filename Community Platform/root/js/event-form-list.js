@@ -17,7 +17,7 @@ try {
                 isRequired: true,
                 "min-length": 1,
                 "max-length": 64,
-                regex: '^[A-z\s]*$'
+                regex: '^[A-z\\u4E00-\\u9FFF\\u3400-\\u4DFF\\s ]*$'
             }
         }, {
             "type": "last_name",
@@ -27,7 +27,7 @@ try {
                 isRequired: true,
                 "min-length": 1,
                 "max-length": 64,
-                regex: '^[A-z\s]*$'
+                regex: '^[A-z\\u4E00-\\u9FFF\\u3400-\\u4DFF\\s ]*$'
             }
         }, {
             "type": "email",
@@ -37,7 +37,7 @@ try {
                 isRequired: true,
                 "min-length": 4,
                 "max-length": 320,
-                regex: '^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$'
+                regex: '^\\w+@[a-zA-Z_]+?\\.[a-zA-Z]{2,3}$'
             }
         }, {
             "type": "phone_number",
