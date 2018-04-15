@@ -210,11 +210,13 @@
    // Run for each json
    var feeString = childData.val().Fee;
    var fees = [];
+   // put the member types and fees into an array
    for(var i=0; i<feeString.length; i++){
     var memType = Object.keys(feeString[i]);
     obj[memType] = Object.values(feeString[i]);
     fees.push(obj);
    }
+   // Convery into dataset object
    var data = new DataSet({
     "start":childData.val().start,
     "end":childData.val().end,
@@ -230,16 +232,19 @@
     "fee":fees
    });
    sampleData.push(data);
+   // Add feature into the map
    var div = geomap.addFeature(data);
    $('#geo-content').append(div);
    geoList.push({div: div, data: data});
   });
+  // refresh the event list
   var dp = new GEOPAG({
    paging: 5,
    content: $('.geo-div.content'),
    control: $('#page-menu')
   });
   dp.pag();
+  // initialize the filter
   var filter = new GEOFILTER({
    date: false,
    district: true
@@ -302,7 +307,7 @@
     }
    }
   });
-  
+  // Find the event data by div element
   function findData(div){
    for(var i=0; i< geoList.length; i++){
     if(div==geoList[i].div){ return geoList[i].data;}
