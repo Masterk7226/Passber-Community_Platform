@@ -20,6 +20,9 @@ function PhotoAlbum() {
   this.signInButton = document.getElementById('sign-in');
   this.signOutButton = document.getElementById('sign-out');
   this.signInSnackbar = document.getElementById('must-signin-snackbar');
+  
+  this.createButton = document.getElementById('createButton');
+  this.createButton.addEventListener('click', this.redirectCreate.bind(this));
 
   // Saves message on form submit.
   this.signOutButton.addEventListener('click', this.signOut.bind(this));
@@ -85,6 +88,10 @@ PhotoAlbum.prototype.setImageUrl = function(imageUri, imgElement) {
   } else {
     imgElement.src = imageUri;
   }
+};
+
+PhotoAlbum.prototype.redirectCreate = function() {
+ window.location.replace("https://passber-community-platform.firebaseapp.com/html/PhotoAlbum/album_create.html?" + communityID);
 };
 
 // Signs-in Friendly Chat.
@@ -178,12 +185,6 @@ PhotoAlbum.PHOTO_TEMPLATE =
   '</div>' +
   '</form>' +
   '</div>';
-
-PhotoAlbum.prototype.insertButton = function(communityId){
-  var createButton = document.createElement('button');
-  createButton.setAttribute("id", communityId);
-  createButton.innerHtml = "Create Album";
-}
 
 // Displays a Message in the UI.
 PhotoAlbum.prototype.displayAlbums = function(key, albumName, creator, creatorPhotoUrl) {
