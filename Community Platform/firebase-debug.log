@@ -1,0 +1,54 @@
+[debug] [2018-04-15T06:12:54.045Z] ----------------------------------------------------------------------
+[debug] [2018-04-15T06:12:54.061Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\maste\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase deploy
+[debug] [2018-04-15T06:12:54.061Z] CLI Version:   3.17.4
+[debug] [2018-04-15T06:12:54.061Z] Platform:      win32
+[debug] [2018-04-15T06:12:54.061Z] Node Version:  v8.9.4
+[debug] [2018-04-15T06:12:54.061Z] Time:          Sun Apr 15 2018 14:12:54 GMT+0800 (中國標準時間)
+[debug] [2018-04-15T06:12:54.061Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-04-15T06:12:54.079Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-04-15T06:12:54.080Z] > authorizing via signed-in user
+[debug] [2018-04-15T06:12:54.083Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/passber-community-platform  
+  
+ Sun Apr 15 2018 14:12:54 GMT+0800 (中國標準時間)
+[debug] [2018-04-15T06:12:54.963Z] <<< HTTP RESPONSE 200
+[debug] [2018-04-15T06:12:54.964Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/passber-community-platform/tokens  
+  
+ Sun Apr 15 2018 14:12:54 GMT+0800 (中國標準時間)
+[debug] [2018-04-15T06:12:55.650Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Deploying to 'passber-community-platform'...
+[info] 
+[info] i  deploying database, storage, hosting
+[info] i  database: checking rules syntax...
+[debug] [2018-04-15T06:12:56.531Z] >>> HTTP REQUEST PUT https://passber-community-platform.firebaseio.com/.settings/rules.json?dryRun=true  
+ {
+  "rules": {
+    ".read": true,
+    ".write": "auth != null"
+  }
+}
+ 
+ Sun Apr 15 2018 14:12:56 GMT+0800 (中國標準時間)
+[debug] [2018-04-15T06:12:57.274Z] <<< HTTP RESPONSE 200
+[info] +  database: rules syntax for database passber-community-platform is valid
+[debug] [2018-04-15T06:12:57.274Z] >>> HTTP REQUEST GET https://appengine.googleapis.com/v1/apps/passber-community-platform  
+  
+ Sun Apr 15 2018 14:12:57 GMT+0800 (中國標準時間)
+[debug] [2018-04-15T06:12:58.554Z] <<< HTTP RESPONSE 200
+[info] i  storage: checking storage.rules for compilation errors...
+[debug] [2018-04-15T06:12:58.558Z] >>> HTTP REQUEST POST https://firebaserules.googleapis.com/v1/projects/passber-community-platform:test  
+ { source: { files: [ [Object] ] } } 
+ Sun Apr 15 2018 14:12:58 GMT+0800 (中國標準時間)
+[debug] [2018-04-15T06:12:58.802Z] <<< HTTP RESPONSE 200
+[info] +  storage: rules file storage.rules compiled successfully
+[info] i  storage: uploading rules storage.rules...
+[debug] [2018-04-15T06:12:58.809Z] >>> HTTP REQUEST POST https://firebaserules.googleapis.com/v1/projects/passber-community-platform/rulesets  
+ { source: { files: [ [Object] ] } } 
+ Sun Apr 15 2018 14:12:58 GMT+0800 (中國標準時間)
+[debug] [2018-04-15T06:12:59.814Z] <<< HTTP RESPONSE 200
+[debug] [2018-04-15T06:12:59.814Z] [rules] created ruleset projects/passber-community-platform/rulesets/bfd05706-9fb6-466b-8384-99565d8054c7
+[info] i  hosting: preparing root directory for upload...
+[debug] [2018-04-15T06:13:01.381Z] >>> HTTP REQUEST PUT https://deploy.firebase.com/v1/hosting/passber-community-platform/uploads/-LA6vqCYH7prDGdfqkXM?fileCount=255&message=  
+  
+ Sun Apr 15 2018 14:13:01 GMT+0800 (中國標準時間)

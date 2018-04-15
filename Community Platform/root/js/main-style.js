@@ -168,14 +168,13 @@ $('#sign-out').click(function () {
     });
 });
 
-$(".login-controls, #account-management").hide();
+$(".login-controls, .account-management").hide();
 var user = null;
 firebase.auth().onAuthStateChanged(function (user) {
     window.user = user;
-    console.log($('.login-controls'), $('#account-management'))
     if (user != null) {
         $('.login-controls').show();
     } else {
-        $('#account-management').show();
+        $('.account-management').show();
     }
 });

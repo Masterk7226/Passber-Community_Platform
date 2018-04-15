@@ -140,12 +140,22 @@
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="top-navbar-1">
                 <ul class="nav navbar-nav navbar-right">
+                    <li class="account-management login-controls" id="geo-mapping">
+                        <a href="Geo-Mapping/ver6.html">
+                            <i class="material-icons">search</i>
+                        </a>
+                    </li>
+                    <li class="login-controls" id="instant-message">
+                        <a href="InstantMessage/InstantMessage.html">
+                            <i class="material-icons">chat</i>
+                        </a>
+                    </li>
                     <li class="login-controls">
                         <a href="my-community-list.html">My Community</a>
                     </li>
                     <li class="login-controls">
                         <div class="btn-group" id="account-control">
-                            <button type="button" class="btn btn-danger">Account</button>
+                            <button type="button" class="btn btn-danger" id="user-identity">Account</button>
                             <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="caret"></span>
                                 <span class="sr-only">Toggle Dropdown</span>
@@ -161,7 +171,7 @@
                             </ul>
                         </div>
                     </li>
-                    <li id="account-management">
+                    <li class="account-management">
                         <a class="btn btn-link-3" data-target="#login-modal" data-toggle="modal" href="#">Login</a>
                     </li>
                 </ul>
@@ -219,7 +229,7 @@
                         <div class="modal-body">
                             <div id="div-lost-msg">
                                 <div id="icon-lost-msg" class="glyphicon glyphicon-chevron-right"></div>
-                                <span id="text-lost-msg">Type your e-mail.</span>
+                                <span id="text-lost-msg">We will send you a reset password email.</span>
                             </div>
                             <input id="lost_email" class="form-control" type="text" placeholder="E-Mail (type ERROR for error effect)" required>
                         </div>

@@ -1,0 +1,52 @@
+body,html{
+ height: 100%;
+ min-width: 800px;
+}
+.selection{
+ width: 100%;
+ background: lightblue;
+ padding: 5px;
+ box-shadow: 0px 5px 5px grey;
+ top: 0;
+ position: sticky;
+}
+#filter_selection input{
+ padding-left: 5px;
+}
+#filter_selection select{
+ border: solid lightgey 3px;
+ border-radius: 15px;
+ padding: 0;
+ line-height: 10px;
+}
+#form_start,#form_end{
+ border: solid lightgey 3px;
+ border-radius: 15px;
+ padding: 0;
+ line-height: 10px;
+}
+.evt{
+}
+.evt div{
+}
+.evt div:hover{}
+.map {width:50%;display: inline-block;height: 100%;}
+#popup{}
+.popup-container{width: 250px;}
+.popup-title{ height: 80px; width: 250px;}
+.popup-container div{display: inline-block; overflow: hidden;}
+.popup-img{ width: 80px; height: 80px; float: left; padding-right: 10px;}
+.popup-content{display: relative;}
+.popup-name{padding-left: 10px;width: auto;}
+.popup-pin{height: 20px; width: 12px;}
+.popup-address{}
+#geo-div-zone{float: left;height: 100%;width:50%; overflow-y: scroll;display: inline-block;}
+.geo-div-content{width: 100%;margin-top: 10px;padding-left: 10px; background: #e9f1e6; box-shadow: 0px 5px 5px lightgrey;}
+.geo-div-content div{display: table-row-group;}
+.geo-div-content img{}
+.geo-div-fee{width: 4000px; overflow-x: hidden; position}
+.geo-div-fee div{display: inline-block; margin-right: 5px;}
+.geo-div-info div{display: inline-block;}
+.geo-div-img {width: 100px; height: 100px;display: inline-block;float: left;margin-right: 10px;}
+
+.geo-div-focus{ background: lightyellow;}
