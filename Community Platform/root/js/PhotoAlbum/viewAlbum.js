@@ -10,7 +10,7 @@ function PhotoAlbum() {
     window.location.replace("../../404.html");
   }
   var create = document.getElementById('create');
-  create.setAttribute("id", "communityID");
+  create.id = communityID;
 
   // Shortcuts to DOM Elements.
   //Album element
