@@ -18,6 +18,14 @@
 // Initializes PhotoAlbum.
 function PhotoAlbum() {
   this.checkSetup();
+  
+  var url_string = window.location.href;
+  var url = new URL(url_string);
+  this.communityID = url.searchParams.get("communityID");
+   if (this.communityID == null) {
+    window.location.replace("../../404.html");
+  }
+  
 
   // Shortcuts to DOM Elements.
   this.messageList = document.getElementById('messages');
@@ -109,8 +117,8 @@ PhotoAlbum.prototype.loadAlbum = function() {
   var url = new URL(url_string);
   var viewId = url.searchParams.get("view");
 
-  this.albumRef = this.database.ref('Platform/ABCClub/PhotoAlbum/' + viewId);
-  this.photoRef = this.database.ref('Platform/ABCClub/PhotoAlbum/' + viewId + '/images');
+  this.albumRef = this.database.ref('Community/' + this.communityID + '/PhotoAlbum/' + viewId);
+  this.photoRef = this.database.ref('Community/' + this.communityID + '/PhotoAlbum/' + viewId + '/images');
   //Make sure we remove all previous listeners.
   this.photoRef.off();
   this.albumRef.off();
