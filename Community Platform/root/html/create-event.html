@@ -293,8 +293,12 @@
 <script src="../js/main-style.js" defer></script>
 <link href="../css/page-style.css" rel="stylesheet">
 <script>
-    $(".event-start-time").datepicker();
-    $(".event-end-time").datepicker();
+    $(".event-start-time").datepicker({
+        dateFormat: "dd-mm-yy",
+    });
+    $(".event-end-time").datepicker({
+        dateFormat: "dd-mm-yy",
+    });
     $(".next-button").on("click.next-page", function () {
         var communityID = $.urlParam("communityID");
         var ref = firebase.database().ref("Community/" + communityID + "/EventSet");

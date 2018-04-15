@@ -368,7 +368,12 @@ footer {
 
 /* Retina-ize images/icons */
 
-@media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and ( min--moz-device-pixel-ratio: 2), only screen and ( -o-min-device-pixel-ratio: 2/1), only screen and ( min-device-pixel-ratio: 2), only screen and ( min-resolution: 192dpi), only screen and ( min-resolution: 2dppx) {
+@media only screen and (-webkit-min-device-pixel-ratio: 2),
+only screen and ( min--moz-device-pixel-ratio: 2),
+only screen and ( -o-min-device-pixel-ratio: 2/1),
+only screen and ( min-device-pixel-ratio: 2),
+only screen and ( min-resolution: 192dpi),
+only screen and ( min-resolution: 2dppx) {
     /* logo */
     .navbar-brand {
         background-image: url(../../../img/passber_logo.png) !important;
@@ -395,13 +400,13 @@ input[type=password] {
     margin-top: 10px;
 }
 
-#google_login{
-	width: 100%;
-	margin-top:10px;
+#google_login {
+    width: 100%;
+    margin-top: 10px;
 }
 
-.dropdown-menu a{
-	color: black !important;
+.dropdown-menu a {
+    color: black !important;
 }
 
 #div-login-msg,
@@ -451,9 +456,22 @@ input[type=password] {
     background-color: #eb575b !important;
 }
 
-#img_logo, .img_logo {
-    max-height: 100px!important;
-    max-width: 100px!important;
+#img_logo {
+    max-height: 100px;
+    max-width: 100px;
+}
+
+.nav.navbar-nav.navbar-right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.navbar-brand {
+    opacity: 1;
+}
+.navbar-brand:hover {
+    opacity: 0.8;
 }
 
 /* #########################################

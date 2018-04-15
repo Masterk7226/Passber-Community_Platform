@@ -74,13 +74,14 @@ input:checked+.slider:before {
 /* Dynamic Form */
 
 body {
-    overflow-x: scroll;
+    overflow-x: hidden;
 }
 
 #body-container {
     height: 100vh;
     width: 100vw;
     background-color: #F1F1F1;
+    background-image: url("../img/background_office-form.jpg");
     overflow-x: hidden;
     -webkit-font-smoothing: subpixel-antialiased;
     font-family: 'Open Sans', sans-serif;
@@ -145,17 +146,18 @@ pre {
 
 .form-activate-button {
     background-color: transparent;
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
 .form-activate-button:hover {
     background-color: transparent;
 }
 
-.form-activate-button:active{
+.form-activate-button:active {
     background-color: transparent;
 }
 
-.form-activate-button > span {
+.form-activate-button>span {
     margin-right: 10px;
 }
 
@@ -629,6 +631,7 @@ pre {
 }
 
 /* Additional Information */
+
 #additional-info {
     color: #7e7e7e;
 }

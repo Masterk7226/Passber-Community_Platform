@@ -680,7 +680,7 @@ var DynamicForm = function () {
         dom.append('<label class="field-text">' + label + '</label>');
         var datepicker = $('<input class="field-input form-control" type="text" >').val(((value != undefined) ? value : ""));
         datepicker.datepicker({
-            dateFormat:  "dd-mm-yy",
+            dateFormat: "dd-mm-yy",
         });
         dom.append(datepicker);
 
@@ -1454,7 +1454,7 @@ var DynamicForm = function () {
         });;
         var datepicker = $('<input class="field-input form-control" type="text">');
         datepicker.datepicker({
-            dateFormat:  "dd-mm-yy",
+            dateFormat: "dd-mm-yy",
         });
         datepicker = $('<td class="display-field-input input-sm" >').append(datepicker);
         field.append(label.add(datepicker));
@@ -1680,22 +1680,12 @@ try {
     ref.once("value").then(function (data) {
         if (data.val() != null) {
             forms = data.val();
+            console.log(forms, formID)
+            formDataObject = forms[formID];
+            DynamicForm.formController.setFormDataObject(formDataObject);
+            DynamicForm.formController.loadFormFromDataObject();
         }
-
-        formDataObject = forms[formID];
-        DynamicForm.formController.setFormDataObject(formDataObject);
-        DynamicForm.formController.loadFormFromDataObject();
     });
-} catch (error) {
-    var jsonObject = [];
-
-    localStorage["forms"] = JSON.stringify(jsonObject);
-}
-
-try {
-    // formDataObject = JSON.parse(localStorage["forms"])[formID];
-    // DynamicForm.formController.setFormDataObject(formDataObject);
-    // DynamicForm.formController.loadFormFromDataObject();
 } catch (error) {
 
 }
