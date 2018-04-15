@@ -237,7 +237,7 @@ PhotoAlbum.prototype.displayAlbums = function(key, albumName, creator, creatorPh
   var communityinput = document.createElement('input');
   communityinput.setAttribute('type', 'hidden');
   communityinput.setAttribute('name', 'communityID');
-  communityinput.setAttribute('value', this.communityId);
+  communityinput.setAttribute('value', this.communityID);
 
   //info from the album
   var descInfo = document.createElement('p');
