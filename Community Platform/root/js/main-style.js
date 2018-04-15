@@ -17,16 +17,30 @@ $("form").submit(function () {
             if (!/\S+@\S+\.\S+/.test(email)) {
                 msgChange($('#div-login-msg'), $('#icon-login-msg'), $('#text-login-msg'), "error", "glyphicon-remove", "Invalid Email Address");
             } else {
-                LoginAccount(email, password);
+                firebase.auth().signInWithEmailAndPassword(email, password).then(function () {
+                    loginMethod = "eP";
+                    onAuthStateChanged(this);
+                }).catch(function (error) {
+                    msgChange($('#div-login-msg'), $('#icon-login-msg'), $('#text-login-msg'), "error", "glyphicon-remove", "Incorrect email or password.");
+                });;
             }
             return false;
             break;
         case "lost-form":
-            var $ls_email = $('#lost_email').val();
-            if ($ls_email == "ERROR") {
-                msgChange($('#div-lost-msg'), $('#icon-lost-msg'), $('#text-lost-msg'), "error", "glyphicon-remove", "Send error");
+            var email = $('#lost_email').val();
+            // if ($ls_email == "ERROR") {
+            //     msgChange($('#div-lost-msg'), $('#icon-lost-msg'), $('#text-lost-msg'), "error", "glyphicon-remove", "Send error");
+            // } else {
+            //     msgChange($('#div-lost-msg'), $('#icon-lost-msg'), $('#text-lost-msg'), "success", "glyphicon-ok", "Send OK");
+            // }
+            if (!/\S+@\S+\.\S+/.test(email)) {
+                msgChange($('#div-lost-msg'), $('#icon-lost-msg'), $('#text-lost-msg'), "error", "glyphicon-remove", "Invalid Email Address");
             } else {
-                msgChange($('#div-lost-msg'), $('#icon-lost-msg'), $('#text-lost-msg'), "success", "glyphicon-ok", "Send OK");
+                firebase.auth().sendPasswordResetEmail(email).then(function () {
+                    msgChange($('#div-lost-msg'), $('#icon-lost-msg'), $('#text-lost-msg'), "success", "glyphicon-ok", "Reset email is sent, please check your email");
+                }).catch(function (error) {
+                    msgChange($('#div-lost-msg'), $('#icon-lost-msg'), $('#text-lost-msg'), "error", "glyphicon-remove", "Email does not exist");
+                });
             }
             return false;
             break;
@@ -55,11 +69,15 @@ $("form").submit(function () {
             } else {
                 $('#register_login_btn').trigger("click");
                 firebase.auth().createUserWithEmailAndPassword(email, password).then(function (user) {
-                    user.updateProfile({
+                    var profile = {
                         fName: fName,
                         lName: lName,
                         phone: phone
-                    });
+                    };
+                    if (user != null) {
+                        var profileRef = firebase.database().ref('User').child(user.uid);
+                        profileRef.update(profile);
+                    }
                 }).catch(function (error) {
                     msgChange($('#div-register-msg'), $('#icon-register-msg'), $('#text-register-msg'), "error", "glyphicon-remove", "Sorry, error during the registration.");
                 });
@@ -136,11 +154,11 @@ function onAuthStateChanged() {
             console.log(123)
             msgChange($('#div-login-msg'), $('#icon-login-msg'), $('#text-login-msg'), "error", "glyphicon-remove", "Login failed.");
         }
-        
+
     });
 }
 
-$('#my-profile').on("click", function(){
+$('#my-profile').on("click", function () {
     window.location.replace("../html/my-profile.html");
 });
 

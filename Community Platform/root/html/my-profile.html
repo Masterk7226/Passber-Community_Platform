@@ -291,30 +291,47 @@
 
     <div id="body-container">
         <div style="display:flex;min-height:100%;width:100%;align-items:center;justify-content:center">
-            <div id="community-info-container" class="content-container">
+            <div id="community-info-container" class="fit-container">
                 <fieldset>
                     <legend>My Profile:</legend>
-                    <div class="user-fName">First Name:
-                        <input type="text" />
-                    </div>
-                    <div class="user-lName">Last Name:
-                        <input type="text" />
-                    </div>
-                    <div class="user-email">Email Address:
-                        <input type="text" />
-                    </div>
-                    <div class="user-phone">Phone Number:
-                        <input type="text" />
-                    </div>
-                    <div class="user-crPassword">Current Password:
-                        <input type="password" />
-                    </div>
-                    <div class="user-nPassword">New Password:
-                        <input type="password" />
-                    </div>
-                    <div class="user-cfPassword">Confirm Password:
-                        <input type="password" />
-                    </div>
+                    <table>
+                        <tr class="user-fName">
+                            <td>First Name:</td>
+                            <td>
+                                <input type="text" />
+                            </td>
+                        </tr>
+                        <tr class="user-lName">
+                            <td>Last Name:</td>
+                            <td>
+                                <input type="text" />
+                            </td>
+                        </tr>
+                        <tr class="user-email">
+                            <td>Email Address:</td>
+                            <td>
+                                <span></span>
+                        </tr>
+                        </tr>
+                        <tr class="user-phone">
+                            <td>Phone Number:</td>
+                            <td>
+                                <input type="text" />
+                            </td>
+                        </tr>
+                        <tr class="user-nPassword">
+                            <td>New Password:</td>
+                            <td>
+                                <input type="password" />
+                            </td>
+                        </tr>
+                        <tr class="user-cfPassword">
+                            <td>Confirm Password:</td>
+                            <td>
+                                <input type="password" />
+                            </td>
+                        </tr>
+                    </table>
                     <button id="save-profile">Save</button>
                 </fieldset>
             </div>
@@ -341,21 +358,79 @@
 <link href="../css/page-style.css" rel="stylesheet">
 
 <script>
-    var loadMemberTypeList = function () {
-        $(".user-fName input").val(user.name);
-        $(".user-lName input").val(user.input);
-        $(".user-email input").val(user.email);
-        $(".user-phone input").val(user.phone);
+    var user;
+    var ref;
+    var loadUserInfo = function () {
+        ref = firebase.database().ref('User').child(user.uid);
+
+        ref.on("value", function (data) {
+            var profile = data.val();
+
+            if (profile != null) {
+                $(".user-fName input").val(profile.fName);
+                $(".user-lName input").val(profile.lName);
+                $(".user-email span").text(user.email);
+                $(".user-phone input").val(profile.phone);
+            }
+        });
     }
     $("#save-profile").on("click.save-profile", function () {
         var fName = $(".user-fName input").val();
         var lName = $(".user-lName input").val();
-        var email = $(".user-email input").val();
         var phone = $(".user-phone input").val();
+        var newProfile = {
+            fName: fName,
+            lName: lName,
+            phone: phone
+        };
+        var nPassword = $(".user-nPassword input").val();
+        var cfPassword = $(".user-cfPassword input").val();
+
+        ref.update(newProfile).then(function () {
+            var message = $('<p>Profile updated successfully</p>');
+            message.dialog({
+                modal: true,
+                buttons: {
+                    Ok: function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        });
+
+        if (nPassword != "") {
+            console.log(nPassword, cfPassword)
+            if (nPassword == cfPassword) {
+                user.updatePassword(nPassword).then(function () {
+                    var message = $('<p>Password changed successfully</p>');
+                    message.dialog({
+                        modal: true,
+                        buttons: {
+                            Ok: function () {
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+                });
+            } else {
+                var message = $('<p>Sorry, the confirm password does not match the another one.</p>');
+                message.dialog({
+                    modal: true,
+                    buttons: {
+                        Ok: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }
+        }
     });
+
     firebase.auth().onAuthStateChanged(function (user) {
         window.user = user;
-        loadUserInfo();
+        if (user != null) {
+            loadUserInfo();
+        }
     });
 </script>
 
