@@ -100,7 +100,7 @@
                 </div>
             </div>
         </nav>
-    
+
         <div class="modal fade" id="login-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -110,10 +110,10 @@
                             <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                         </button>
                     </div>
-    
+
                     <!-- Begin # DIV Form -->
                     <div id="div-forms">
-    
+
                         <!-- Begin # Login Form -->
                         <form id="login-form">
                             <div class="modal-body">
@@ -145,7 +145,7 @@
                             </div>
                         </form>
                         <!-- End # Login Form -->
-    
+
                         <!-- Begin | Forget Password Form -->
                         <form id="lost-form" style="display:none;">
                             <div class="modal-body">
@@ -166,7 +166,7 @@
                             </div>
                         </form>
                         <!-- End | Lost Password Form -->
-    
+
                         <!-- Begin | Register Form -->
                         <form id="register-form" style="display:none;">
                             <div class="modal-body">
@@ -192,10 +192,10 @@
                             </div>
                         </form>
                         <!-- End | Register Form -->
-    
+
                     </div>
                     <!-- End # DIV Form -->
-    
+
                 </div>
             </div>
         </div>
@@ -320,6 +320,46 @@
 
             window.location.href = "manage-member-type.html?communityID=" + communityID;
         }).key;
+
+        //Create the Community Group (Instant Message)
+        var details = createDetails();
+        if (details != null) {
+          createMessages(details);
+        }
+
+        function createDetails() {
+          var key = "Null";
+          var name = $(".community-name").val();
+          var ref = firebase.database().ref("InstantMessage/Details/Community");
+
+          var strings = {
+              Members: {
+                "-001M": {
+                  email: firebase.auth().currentUser.email // Get from where
+                }
+              },
+              Name: name,
+              Role: {
+                "-001R": {
+                  email: firebase.auth().currentUser.email
+                }
+              }
+            }
+            key = ref.push(strings);
+          return key;
+          }
+
+        function createMessages(details) {
+          var ref = firebase.database().ref("InstantMessage/Messages/Community");
+          var Msgstrings = {
+            Message: {
+              name: "New Group Created."
+            },
+            Name: details.key
+          };
+          var checking = ref.push(Msgstrings);
+        }
+
     });
     $(".cancel-button").on("click.back-page", function () {
         window.location.href = "my-community-list.html";

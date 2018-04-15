@@ -119,9 +119,7 @@
       border: 1px solid #ccc;
       border-top: none;
     }
-  </style>
 
-  <style>
     #divChatRoom {
       background-color: #0288d1;
       padding-left: 10px;
@@ -153,58 +151,18 @@
       background-color: gray;
       width: 27%;
     }
-  </style>
 
-  <style>
-    /* The Modal (background) */
-
-    .modal {
-      display: none;
-      /* Hidden by default */
-      position: fixed;
-      /* Stay in place */
-      z-index: 1;
-      /* Sit on top */
-      left: 0;
-      top: 0;
-      width: 100%;
-      /* Full width */
-      height: 100%;
-      /* Full height */
-      overflow: auto;
-      /* Enable scroll if needed */
-      background-color: rgb(0, 0, 0);
-      /* Fallback color */
-      background-color: rgba(0, 0, 0, 0.4);
-      /* Black w/ opacity */
+    .buttonList {
+      width: 250px;
+      text-align: left;
     }
 
-    /* Modal Content/Box */
-
-    .modal-content {
-      background-color: #fefefe;
-      margin: 15% auto;
-      /* 15% from the top and centered */
-      padding: 20px;
-      border: 1px solid #888;
-      width: 80%;
-      /* Could be more or less, depending on screen size */
+    .roleList{
+      color: red;
     }
 
-    /* The Close Button */
-
-    .close {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-    }
-
-    .close:hover,
-    .close:focus {
+    #Role input{
       color: black;
-      text-decoration: none;
-      cursor: pointer;
     }
   </style>
 </head>
@@ -222,9 +180,7 @@
         <div id="user-container">
           <div hidden id="user-pic"></div>
           <div hidden id="user-name"></div>
-          <button hidden id="sign-out" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-color-text--white">
-          Sign-out
-        </button>
+          <button hidden id="sign-out" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-color-text--white"> </button>
           <button hidden id="sign-in" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-color-text--white">
           <i class="material-icons">account_circle</i>
           User:
@@ -242,96 +198,96 @@
 
 
           <div id="divChatRoom">
-            <p style="font-size:20px;">
-              ChatRoom
-              <!-- <a id="myBtn" style="line-height: 10px;" class="btn-floating btn-small waves-effect waves-light red"><i style="    line-height: 25px;" class="material-icons">add</i></a> -->
-            </p>
-
-
-            <!-- <button hidden id="List">Refresh</button> -->
 
             <div class="tab" style="width: fit-content;">
-              <!-- <button style="width: fit-content;" id="Person" class="tablinks" onclick="openCity(event, 'Paris')">Person</button> -->
-              <button style="width: fit-content;" id="Group" class="tablinks" onclick="openCity(event, 'London')">Group</button>
+              <button style="width: fit-content;" id="Community" class="tablinks" onclick="openCity(event, 'Paris')">Community</button>
               <button style="width: fit-content;" id="Event" class="tablinks" onclick="openCity(event, 'Tokyo')">Event</button>
-            </div>
-
-            <div style="padding-right:10px;" id="London" class="tabcontent">
-              <!-- <div id="ChatRoom"></div> -->
-              <div id="Group_Tab" style='height: 150px; overflow: auto; padding-right: 5px;'></div>
+              <button style="width: fit-content;" id="Group" class="tablinks" onclick="openCity(event, 'London')">Group</button>
             </div>
 
             <div style="padding-right:10px;" id="Paris" class="tabcontent">
-              <div id="Person_Tab" ></div>
+              <div id="Community_Tab" ></div>
             </div>
 
             <div style="padding-right:10px;" id="Tokyo" class="tabcontent">
               <div id="Event_Tab" style='height: 150px; overflow: auto; padding-right: 5px;'></div>
             </div>
+
+            <div style="padding-right:10px;" id="London" class="tabcontent">
+              <div id="Group_Tab" style='height: 150px; overflow: auto; padding-right: 5px;'></div>
+            </div>
+
           </div>
 
-          <!-- Create Chat Room -->
           <div id="divManageGroup" style="height:490px; overflow: auto; padding-top:5px; padding-right: 5px;">
             <input type="text" id="hidden_type" value="" hidden disabled/>
             <input type="text" id="hidden_id" value=""  hidden disabled/>
             <input type="text" id="hidden_user" value=""  hidden disabled/>
-            <table>
-              <tr>
-                <td>Room:</td>
-                <td id="TempGroupName"></td>
-              </tr>
-              <!-- <tr>
-                <td>...</td>
-                <td id="TempStorage"></td>
-              </tr> -->
+            <table border="0" style="width:100%">
+              <center>
+                <h4>Group Information</h4>
+              </center>
 
               <tr>
-                <td>User:</td>
+                <td style=" vertical-align: text-bottom; ">Group Name:</td>
+                <td id="TempGroupName"></td>
+              </tr>
+
+              <tr>
+                <td style=" vertical-align: text-bottom; ">Users:</td>
                 <td id="TempGroupUser"></td>
               </tr>
 
-              <center>
-                <h4>Room Information</h4></center>
-
-              <!-- <th colspan="2">Create new Group</th> -->
-              <tr colspan="2">
+              <tr>
                 <td>
-                  <button style="width:100%;"><a href="CreateRoom.html" onclick="window.open('CreateRoom.html','newwindow','width=400,height=200'); return false;">New Group</a></button>
+                  <center>
+                    <button style="width:90%">
+                      <a href="CreateRoom.html" onclick="window.open('CreateRoom.html','newwindow','width=400,height=200'); return false;">New</a>
+                    </button>
+                  </center>
+                </td>
+                <td>
+                  <center>
+                    <button style="width:90%" type="button" name="button">Exit</button>
+                </center>
                 </td>
               </tr>
             </table>
 
-              <div id="Role" style="display: none;">
-                <table>
-              <!-- Add the Group Member -->
-              <th colspan="2">Add Member</th>
+<br/>
+
+              <div id="Role" style="display: block;">
+
+              <table border="0" style="width:100%">
+
+              <th style="padding:5px;text-align: center;" colspan="2">Add</th>
+
               <tr>
                 <td>Email:</td>
-                <td>
+                <td style="text-align: right;">
                   <input type='email' id='AddUser'>
                   <button id="addMember">Add</button>
                 </td>
               </tr>
-              <!-- Delete the Group Member -->
-              <th colspan="2">Delete Member</th>
+
+
+              <th style="padding:5px;text-align: center;" colspan="2">Delete</th>
+
               <tr>
                 <td>Email:</td>
-                <td>
+                <td style="text-align: right;">
                   <input type='email' id='DeleteUser'>
                   <button id="delMember">Delete</button>
                 </td>
               </tr>
+
             </table>
             </div>
 
           </div>
         </div>
 
-        <!-- Default -->
-        <!-- padding-top: 10px; padding-left: 450px; -->
         <div id="messages-card-container" style="height:750px; width:auto;" >
-          <!--class="mdl-cell mdl-cell--12-col mdl-grid"-->
-          <!-- Messages container -->
           <div id="messages-card" class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--12-col mdl-cell--6-col-tablet mdl-cell--6-col-desktop">
             <div class="mdl-card__supporting-text mdl-color-text--grey-600">
               <div id="messages">
@@ -356,21 +312,10 @@
 
             </div>
           </div>
-
-          <div id="must-signin-snackbar" class="mdl-js-snackbar mdl-snackbar">
-            <div class="mdl-snackbar__text"></div>
-            <button class="mdl-snackbar__action" type="button"></button>
-          </div>
-
-
         </div>
       </div>
 
     </main>
-
-      <hr/>
-      <p id="getName"></p>
-      <button type="button" id="btn_logout">Logout</button>
 
     <script src="../../js/InstantMessage/InstantMessage.js"></script>
 

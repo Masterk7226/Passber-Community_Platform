@@ -293,12 +293,8 @@
 <script src="../js/main-style.js" defer></script>
 <link href="../css/page-style.css" rel="stylesheet">
 <script>
-    $(".event-start-time").datepicker({
-        dateFormat: "dd-mm-yy",
-    });
-    $(".event-end-time").datepicker({
-        dateFormat: "dd-mm-yy",
-    });
+    $(".event-start-time").datepicker();
+    $(".event-end-time").datepicker();
     $(".next-button").on("click.next-page", function () {
         var communityID = $.urlParam("communityID");
         var ref = firebase.database().ref("Community/" + communityID + "/EventSet");
@@ -322,6 +318,45 @@
         //         window.location.href = "manage-member-type.html?communityID=" + communityID;
         //     });
         // }).key;
+
+        //Create the Event Group (Instant Message)
+        var details = createDetails();
+        if (details != null) {
+          createMessages(details);
+        }
+
+        function createDetails() {
+          var key = "Null";
+          var name = $(".event-name").val();
+          var ref = firebase.database().ref("InstantMessage/Details/Event");
+
+          var strings = {
+              Members: {
+                "-001M": {
+                  email: firebase.auth().currentUser.email // Get from where
+                }
+              },
+              Name: name,
+              Role: {
+                "-001R": {
+                  email: firebase.auth().currentUser.email
+                }
+              }
+            }
+            key = ref.push(strings);
+          return key;
+          }
+
+        function createMessages(details) {
+          var ref = firebase.database().ref("InstantMessage/Messages/Event");
+          var Msgstrings = {
+            Message: {
+              name: "New Group Created."
+            },
+            Name: details.key
+          };
+          var checking = ref.push(Msgstrings);
+        }
 
         ref.push(event, function () {
             window.location.href = "manage-community.html?communityID=" + communityID;
