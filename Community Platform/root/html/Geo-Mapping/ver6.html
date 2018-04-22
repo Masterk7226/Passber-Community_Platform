@@ -276,16 +276,22 @@
     }
    }
   });
+  var fees = [];
   getMAPJSON(function(childData){
    if(childData!=null){
    // Run for each json
-   var feeString = childData.val().Fee;
-   var fees = [];
+   var feeString = childData.val().fee;
    // put the member types and fees into an array
-   for(var i=0; i<feeString.length; i++){
-    var memType = Object.keys(feeString[i]);
-    obj[memType] = Object.values(feeString[i]);
-    fees.push(obj);
+   for(var x in feeString){
+    if(feeString.hasOwnProperty(x)){
+     var obj = {};
+     Object.defineProperty(obj, x, {
+      value: feeString[x].toString(),
+      enumerable: true,
+      writable: true,
+      configurable: true});
+     fees.push(obj);
+    }
    }
    // Convery into dataset object
    var data = new DataSet({
