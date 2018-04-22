@@ -4381,6 +4381,8 @@ tbody.collapse.in {
 
 .navbar-brand {
   float: left;
+  height: 5vh;
+  width: 25vw;
   padding: 15px 15px;
   font-size: 18px;
   line-height: 20px;
