@@ -3,7 +3,7 @@ function DataSet(obj){
  this.id = (obj.id == null) ? obj.id : '1';
  this.date_start = (obj.start == null) ? obj.start : getToday();
  this.date_end = (obj.end == null) ? obj.end : getToday();
- this.evt_address = (obj.address == null) obj.address : "Hong Kong";
+ this.evt_address = (obj.address == null) ? obj.address : "Hong Kong";
  this.evt_name = (obj.name == null) ? obj.name : 'Unknown';
  this.evt_stat = (obj.stat == null) ? obj.stat : 'Unknown';
  this.imgsrc = (obj.imgsrc == null) ? obj.imgsrc : 'http://www.john-james-andersen.com/wp-content/uploads/nullimage1.gif';
