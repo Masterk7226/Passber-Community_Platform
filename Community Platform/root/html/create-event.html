@@ -37,7 +37,7 @@
     <script src="https://www.gstatic.com/firebasejs/4.11.0/firebase.js"></script>
     <script src="../js/form-set-firebase.js"></script>
     <script src="../js/init-firebase.js"></script>
-    
+
     <!--  Map Location -->
     <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
     <script src="https://openlayers.org/en/v4.6.4/build/ol.js"></script>
@@ -114,65 +114,45 @@
                                 </td>
                             </tr>
                             <tr>
-                                <tr>
-                                    <td>
-                                        <label>Description</label>
-                                    </td>
-                                    <td>
-                                        <textarea class="event-description"></textarea>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <label>Address</label>
-                                    </td>
-                                    <td>
-                                        <textarea class="event-address"></textarea>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <label>Longtitude</label>
-                                    </td>
-                                    <td>
-                                        <input type="text" class="event-longtitude"></input>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <label>Latitude</label>
-                                    </td>
-                                    <td>
-                                        <input type="text" class="event-latitude"></input>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <button type="button" id="mkMap" class="input-field">Use Map</button>
-                                    </td>
-                                    <td>
-                                        <button type="button" id="hideMap" class="input-field">Hide Map</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">
-                                         <div id="map" class="map" style="height:150px; width: 150px;"></div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <input type="button" class="input-field cancel-button" value="Cancel">
-                                    </td>
-                                    <td>
-                                        <input type="button" class="input-field next-button" value="Next" style="float:right">
-                                    </td>
-                                </tr>
+                                <td>
+                                    <label>Address</label>
+                                </td>
+                                <td>
+                                    <textarea class="event-address"></textarea>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label>Description</label>
+                                </td>
+                                <td>
+                                    <textarea class="event-description"></textarea>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">Geo-location (click on the map to set up your location):</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <div id="map" class="map" style="height:150px; width: 150px;"></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <input type="button" class="input-field cancel-button" value="Cancel">
+                                </td>
+                                <td>
+                                    <input type="button" class="input-field next-button" value="Next" style="float:right">
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </fieldset>
             </form>
         </div>
     </div>
+    <input type="hidden" class="event-longtitude"></input>
+    <input type="hidden" class="event-latitude"></input>
 
     <!-- Main JS -->
     <script type="text/javascript" src="../js/create-event.js" defer></script>
@@ -205,22 +185,11 @@
     $(".event-end-time").datepicker({
         dateFormat: "dd-mm-yy",
     });
-    var lm = new locationMap('map', $('.event-longtitude'), $('event-latitude'));
+    var lm = new locationMap('map', $('.event-longtitude'), $('.event-latitude'));
     var showMap = $('#mkMap');
     var hideMap = $('#hideMap');
     var map = $('#map');
-    hideMap.hide();
-    map.hide();
-    showMap.click(function(){
-     hideMap.show();
-     map.show();
-     $(this).hide();
-    })
-    hideMap.click(function(){
-     showMap.show();
-     map.hide();
-     $(this).hide();
-    })
+
     $(".next-button").on("click.next-page", function () {
         var ref = firebase.database().ref("Community/" + communityID + "/EventSet");
         var name = $(".event-name").val();
@@ -234,12 +203,12 @@
             name: name,
             startTime: startTime,
             endTime: endTime,
-            start:startTime,
-            end:endTime,
+            start: startTime,
+            end: endTime,
             description: description,
             address: address,
             lontitue: longtitude,
-            latitue: latitude,
+            latitue: latitude
         };
 
         // var key = ref.push(community, function () {

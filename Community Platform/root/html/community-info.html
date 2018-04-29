@@ -142,8 +142,15 @@
 
         .fit-container,
         .content-container {
-            min-height: 50vh;
-            width: 50vw;
+            min-height: 40vh;
+            width: 40vw;
+        }
+        
+        .community-logo{
+            height: 15%;
+            width: 15%;
+            margin-bottom: 5px;
+            box-shadow: 0 0 0.8823em 0 rgba(0, 0, 0, .5) !important;
         }
     </style>
 </head>
@@ -159,6 +166,7 @@
             <div id="community-info-container" class="fit-container">
                 <fieldset>
                     <legend>Community Info:</legend>
+                    <img class="community-logo">
                     <table>
                         <tr class="community-name">
                             <td>Name:</td>
@@ -191,7 +199,7 @@
                         </button>
                     </a>
                     <button id="join-community" class="disabled">Register</button>
-                    <button id="manage-community" class="disabled">Manage</button>
+                    <button id="manage-community" class="disabled"><i class="material-icons">settings</i>Manage</button>
                 </fieldset>
 
                 <fieldset>
@@ -226,6 +234,7 @@
 
 <script>
     var communityID = $.urlParam("communityID");
+    var storageRef = firebase.storage().ref("Community-Resources");
     var communityRef = firebase.database().ref("Community/" + communityID);
     var ref = communityRef.child("/MemberRecord");
     var eventRef = communityRef.child("/EventSet");
@@ -253,6 +262,16 @@
                 }
             } catch (error) {
 
+            }
+            let logo = $('.community-logo');
+            var logoFileName = community.logoFileName;
+            if (logoFileName != null) {
+                let logoRef = storageRef.child(communityID).child("images").child("logo").child(logoFileName);
+                logoRef.getDownloadURL().then(function (url) {
+                    logo.attr({
+                        src: url
+                    });
+                });
             }
             $(".community-name span").text(community.name);
             $(".community-address span").text(community.address);

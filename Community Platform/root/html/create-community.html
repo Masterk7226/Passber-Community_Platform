@@ -41,11 +41,13 @@
 </head>
 
 <style>
-    .fit-container, .content-container{
+    .fit-container,
+    .content-container {
         min-height: 40vh;
         width: 40vw;
     }
-    table{
+
+    table {
         width: 100%;
         margin-bottom: 10px;
     }
@@ -72,14 +74,14 @@
                     <legend>Create Community</legend>
                     <table>
                         <tbody>
-                            <!-- <tr>
+                            <tr>
                                 <td>
                                     <label>Logo</label>
                                 </td>
                                 <td>
                                     <input type="file" class="community-logo">
                                 </td>
-                            </tr> -->
+                            </tr>
                             <tr>
                                 <td>
                                     <label>Name</label>
@@ -150,11 +152,22 @@
 <script>
     $(".next-button").on("click.next-page", function () {
         var ref = firebase.database().ref("Community");
+        var storageRef = firebase.storage().ref("Community-Resources");
         var name = $(".community-name").val();
         var address = $(".community-address").val();
         var phone = $(".community-phone").val();
         var description = $(".community-description").val();
+        var logo = $(".community-logo").prop("files")[0];
+        var fileType = logo.name.match(/[^\.]*$/)[0];
+        var allowedFileTypes = ["jpg", "png", "gif"];
+        var key = ref.push();
+
+        if (allowedFileTypes.indexOf(fileType) == -1) {
+            alert("Logo format not supported, please reupload.");
+            return;
+        }
         var community = {
+            logoFileName: "logo." + fileType,
             name: name,
             organizerID: user.uid,
             address: address,
@@ -175,8 +188,14 @@
 
         var key = ref.push(community, function () {
             var communityID = key;
+            var logo = $(".community-logo").prop("files")[0];
+            var fileType = logo.name.match(/[^\.]*$/)[0];
+            var logoRef = storageRef.child(communityID).child("images").child("logo").child("logo." +
+                fileType);
 
-            window.location.href = "manage-member-type.html?communityID=" + communityID;
+            logoRef.put(logo).then(function () {
+                window.location.replace("manage-member-type.html?communityID=" + communityID);
+            });
         }).key;
 
 

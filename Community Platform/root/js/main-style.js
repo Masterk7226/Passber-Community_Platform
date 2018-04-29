@@ -21,7 +21,6 @@ $(window).on("scroll.scroll-navbar-detection", {
 }, function (event) {
     var container = $(".navbar-inner-container");
     var scrollTop = $(this).scrollTop();
-    console.log(scrollTop, container)
     if (scrollTop > container.height()) {
         container.addClass("scrolled");
     } else {
@@ -182,7 +181,6 @@ $("#navbar-container").load("../html/nav-bar.html", function () {
                 alert('Welcome back to Passber!');
                 window.location.reload();
             } else {
-                console.log(123);
                 msgChange($('#div-login-msg'), $('#icon-login-msg'), $('#text-login-msg'), "error", "glyphicon-remove", "Login failed.");
             }
 

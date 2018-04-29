@@ -55,6 +55,7 @@
             background-color: #ffffff;
             cursor: pointer;
             margin-bottom: 5px;
+            height: 15vh;
             width: 100%;
             padding: 10px 10px;
         }
@@ -67,13 +68,26 @@
             background-color: rgb(204, 204, 204);
         }
 
+        .community-logo {
+            float: left;
+            height: 100%;
+            width: 11%;
+            box-shadow: 0 0 0.8823em 0 rgba(0, 0, 0, .5) !important;
+        }
+
+        .community-info {
+            margin-left: 15%;
+        }
+
         .community-name {
             display: inline-flex;
             font-size: 1.625vmax;
         }
 
         .community-description {
+            display: block;
             font-size: 1.25vmax;
+            width: 50vw;
         }
 
         .manage-community,
@@ -93,9 +107,10 @@
             font-size: inherit !important;
         }
 
-        .fit-container, .content-container{
+        .fit-container,
+        .content-container {
             min-height: 50vh;
-            width: 70vw;
+            width: 60vw;
         }
     </style>
 
@@ -141,8 +156,10 @@
 <link href="../css/page-style.css" rel="stylesheet">
 
 <script>
+    var storageRef = firebase.storage().ref("Community-Resources");
     var loadCommunitiesFromDatabase = function () {
         let ref = firebase.database().ref("Community").orderByChild("isActivated").equalTo(true);
+        const allowedFileTypes = ["jpg", "png", "gif"];
 
         function createCommunityItem(data) {
             let communityList = $("#community-list");
@@ -161,12 +178,23 @@
 
                     window.location.replace("community-info.html?communityID=" + communityID);
                 });
+
+                let logo = $('<img class="community-logo">');
+                var logoFileName = communityObject.logoFileName;
+                if (logoFileName != null) {
+                    let logoRef = storageRef.child(key).child("images").child("logo").child(logoFileName);
+                    logoRef.getDownloadURL().then(function (url) {
+                        logo.attr({
+                            src: url
+                        });
+                    });
+                }
+                let info = $('<div class="community-info">');
                 let name = $('<div class="community-name">').text(communityObject.name);
-                // let address = $('<div class="community-address">').text(communityObject.address);
-                // let phone = $('<div class="community-phone">').text(communityObject.phone);
                 let description = $('<div class="community-description">').append($('<pre>').text(communityObject.description));
 
-                community.append(name).append(description);
+                info.append(name).append(description);
+                community.append(logo).append(info);
 
                 communityList.append(community);
             }
