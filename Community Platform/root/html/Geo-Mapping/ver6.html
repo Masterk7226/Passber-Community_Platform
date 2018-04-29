@@ -211,10 +211,10 @@
     }
    }
   });
-  var fees = [];
   getMAPJSON(function(childData){
    if(childData!=null){
    // Run for each json
+   var fees = [];
    var feeString = childData.val().fee;
    // put the member types and fees into an array
    for(var x in feeString){
