@@ -80,7 +80,7 @@ function locationMap(mapid, lon, lat){
   anchor: [0.5, 0.5],
   anchorXUnits: 'fraction',
   anchorYUnits: 'fraction',
-  src: 'new_pin.png'
+  src: 'Geo-Mapping/new_pin.png'
  });
  var iconStyle = new ol.style.Style({
   image: icon
