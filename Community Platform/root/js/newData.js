@@ -1,16 +1,16 @@
 function DataSet(obj){
  // Collect Event Data
- this.id = (obj.id == null) ? obj.id : '1';
- this.date_start = (obj.start == null) ? obj.start : getToday();
- this.date_end = (obj.end == null) ? obj.end : getToday();
- this.evt_address = (obj.address == null) ? obj.address : "Hong Kong";
- this.evt_name = (obj.name == null) ? obj.name : 'Unknown';
- this.evt_stat = (obj.stat == null) ? obj.stat : 'Unknown';
- this.imgsrc = (obj.imgsrc == null) ? obj.imgsrc : 'http://www.john-james-andersen.com/wp-content/uploads/nullimage1.gif';
- this.evt_content = (obj.content == null) ? obj.content : '';
- this.evt_deadline = (obj.deadline == null) ? obj.deadline : getToday();
- this.longtitue = (obj.longtitue == null) ? obj.lontitue : '114.1';
- this.latitue = (obj.latitue == null) ? obj.latitue : '22.30';
+ this.id = (obj.id != null) ? obj.id : '1';
+ this.date_start = (obj.start != null) ? obj.start : getToday();
+ this.date_end = (obj.end != null) ? obj.end : getToday();
+ this.evt_address = (obj.address != null) ? obj.address : "Hong Kong";
+ this.evt_name = (obj.name != null) ? obj.name : 'Unknown';
+ this.evt_stat = (obj.stat != null) ? obj.stat : 'Unknown';
+ this.imgsrc = (obj.imgsrc != null) ? obj.imgsrc : 'http://www.john-james-andersen.com/wp-content/uploads/nullimage1.gif';
+ this.evt_content = (obj.content != null) ? obj.content : '';
+ this.evt_deadline = (obj.deadline != null) ? obj.deadline : getToday();
+ this.longtitue = (obj.longtitue != null) ? obj.lontitue : '114.1';
+ this.latitue = (obj.latitue != null) ? obj.latitue : '22.30';
  this.evt_fee = obj.fee;
  
  function getToday(){
