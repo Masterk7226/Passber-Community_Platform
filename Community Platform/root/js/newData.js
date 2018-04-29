@@ -11,7 +11,7 @@ function DataSet(obj){
  this.evt_deadline = (obj.deadline != null) ? obj.deadline : getToday();
  this.longtitue = (obj.longtitue != null) ? obj.longtitue : '114.1';
  this.latitue = (obj.latitue != null) ? obj.latitue : '22.30';
- this.evt_fee = obj.fee;
+ this.evt_fee = (obj.fee != null) ? obj.fee : [{"Everyone" : "0"}];
  
  function getToday(){
   var date = new Date();
