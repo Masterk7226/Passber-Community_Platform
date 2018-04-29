@@ -9,7 +9,7 @@ function DataSet(obj){
  this.imgsrc = (obj.imgsrc != null) ? obj.imgsrc : 'http://www.john-james-andersen.com/wp-content/uploads/nullimage1.gif';
  this.evt_content = (obj.content != null) ? obj.content : '';
  this.evt_deadline = (obj.deadline != null) ? obj.deadline : getToday();
- this.longtitue = (obj.longtitue != null) ? obj.lontitue : '114.1';
+ this.longtitue = (obj.longtitue != null) ? obj.longtitue : '114.1';
  this.latitue = (obj.latitue != null) ? obj.latitue : '22.30';
  this.evt_fee = obj.fee;
  
