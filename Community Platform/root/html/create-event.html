@@ -37,7 +37,9 @@
     <script src="https://www.gstatic.com/firebasejs/4.11.0/firebase.js"></script>
     <script src="../js/form-set-firebase.js"></script>
     <script src="../js/init-firebase.js"></script>
-
+    
+    <!--  Map Location -->
+    <script src="../js/LocationMap.js"></script>
 
 
 
@@ -120,6 +122,43 @@
                                 </tr>
                                 <tr>
                                     <td>
+                                        <label>Address</label>
+                                    </td>
+                                    <td>
+                                        <textarea class="event-address"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <label>Longtitude</label>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="event-longtitude"></input>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <label>Latitude</label>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="event-latitude"></input>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <button type="button" id="mkMap" class="input-field">Use Map</button>
+                                    </td>
+                                    <td>
+                                        <button type="button" id="hideMap" class="input-field">Hide Map</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                         <div id="map" class="map" style="height:100vh; width: 100vw;"></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
                                         <input type="button" class="input-field cancel-button" value="Cancel">
                                     </td>
                                     <td>
@@ -164,17 +203,41 @@
     $(".event-end-time").datepicker({
         dateFormat: "dd-mm-yy",
     });
+    var lm = new locationMap('map', $('.event-longtitude'), $('event-latitude'));
+    var showMap = $('#mkMap');
+    var hideMap = $('#hideMap');
+    var map = $('#map');
+    hideMap.hide();
+    map.hide();
+    showMap.click(function(){
+     hideMap.show();
+     map.show();
+     $(this).hide();
+    })
+    hideMap.click(function(){
+     showMap.show();
+     map.hide();
+     $(this).hide();
+    })
     $(".next-button").on("click.next-page", function () {
         var ref = firebase.database().ref("Community/" + communityID + "/EventSet");
         var name = $(".event-name").val();
         var startTime = $(".event-start-time").val();
         var endTime = $(".event-end-time").val();
         var description = $(".event-description").val();
+        var address = $(".event-address").val();
+        var longtitude = $(".event-longtitude").val();
+        var latitude = $(".event-latitude").val();
         var event = {
             name: name,
             startTime: startTime,
             endTime: endTime,
-            description: description
+            start:startTime,
+            end:endTime
+            description: description,
+            address: address
+            lontitue: longtitude
+            latitue: latitude
         };
 
         // var key = ref.push(community, function () {
