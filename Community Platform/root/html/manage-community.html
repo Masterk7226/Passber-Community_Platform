@@ -158,6 +158,9 @@
                     <div class="community-phone">Phone:
                         <span></span>
                     </div>
+                    <div class="community-fee">Fee(HKD): $
+                        <span></span>
+                    </div>
                     <div class="community-description">Description:
                         <pre></pre>
                     </div>
@@ -230,6 +233,7 @@
             $(".community-name span").text(community.name);
             $(".community-address span").text(community.address);
             $(".community-phone span").text(community.phone);
+            $(".community-fee span").text(community.fee);
             $(".community-description pre").text(community.description);
         });
         communityRef.on("child_changed", function (data) {
@@ -333,7 +337,7 @@
                     "data-id": key
                 });
                 var eventName = $('<div class="event-name">').text(eventObject.name);
-                var manageButton = $('<button class="manage-event"><i class="material-icons">settings</i>Manage</button>').prepend(
+                var manageButton = $('<button class="manage-event">Manage</button>').prepend(
                     '<i class="material-icons">edit</i>');
                 manageButton.on("click.manage-event", {
                     eventID: key

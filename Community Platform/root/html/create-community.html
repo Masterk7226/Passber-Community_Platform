@@ -51,6 +51,11 @@
         width: 100%;
         margin-bottom: 10px;
     }
+
+    #map {
+        height: 40vh;
+        width: 100%;
+    }
 </style>
 
 <script src="../js/login.js"></script>
@@ -80,6 +85,7 @@
                                 </td>
                                 <td>
                                     <input type="file" class="community-logo">
+                                    <span>(Support jpg, png, gif formats)</span>
                                 </td>
                             </tr>
                             <tr>
@@ -104,6 +110,14 @@
                                 </td>
                                 <td>
                                     <input type="text" class="community-phone">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label>Fee(HKD$)</label>
+                                </td>
+                                <td>
+                                    <input type="number" class="community-fee">
                                 </td>
                             </tr>
                             <tr>
@@ -156,6 +170,7 @@
         var name = $(".community-name").val();
         var address = $(".community-address").val();
         var phone = $(".community-phone").val();
+        var fee = $(".community-fee").val();
         var description = $(".community-description").val();
         var logo = $(".community-logo").prop("files")[0];
         var fileType = logo.name.match(/[^\.]*$/)[0];
@@ -172,6 +187,7 @@
             organizerID: user.uid,
             address: address,
             phone: phone,
+            fee: fee,
             description: description,
             isActivated: false
         };

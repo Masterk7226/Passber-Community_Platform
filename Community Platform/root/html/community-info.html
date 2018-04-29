@@ -145,8 +145,8 @@
             min-height: 40vh;
             width: 40vw;
         }
-        
-        .community-logo{
+
+        .community-logo {
             height: 15%;
             width: 15%;
             margin-bottom: 5px;
@@ -186,6 +186,12 @@
                                 <span></span>
                             </td>
                         </tr>
+                        <tr class="community-fee">
+                            <td>Fee(HKD): $</td>
+                            <td>
+                                <span></span>
+                            </td>
+                        </tr>
                         <tr class="community-description">
                             <td>Description:</td>
                         </tr>
@@ -199,7 +205,8 @@
                         </button>
                     </a>
                     <button id="join-community" class="disabled">Register</button>
-                    <button id="manage-community" class="disabled"><i class="material-icons">settings</i>Manage</button>
+                    <button id="manage-community" class="disabled">
+                        <i class="material-icons">edit</i>Manage</button>
                 </fieldset>
 
                 <fieldset>
@@ -266,7 +273,8 @@
             let logo = $('.community-logo');
             var logoFileName = community.logoFileName;
             if (logoFileName != null) {
-                let logoRef = storageRef.child(communityID).child("images").child("logo").child(logoFileName);
+                let logoRef = storageRef.child(communityID).child("images").child("logo").child(
+                    logoFileName);
                 logoRef.getDownloadURL().then(function (url) {
                     logo.attr({
                         src: url
@@ -276,6 +284,7 @@
             $(".community-name span").text(community.name);
             $(".community-address span").text(community.address);
             $(".community-phone span").text(community.phone);
+            $(".community-fee span").text(community.fee);
             $(".community-description pre").text(community.description);
         });
         communityRef.on("child_changed", function (data) {
