@@ -5,10 +5,11 @@ function GEOPAG(options){
  this.content.hide().filter(':lt('+this.paging+')').show();
 }
 GEOPAG.prototype.pag = function(){
+ var paging = this.paging;
  this.control.bootpag({
-  total: this.content.length / this.paging + 1
+  total: this.content.length / paging + 1
  }).on('page', function(event, num){
-  var min = (num - 1) * this.paging;
+  var min = (num - 1) * paging;
   var max = (num) * paging;
   return (index>=min && index <max);
  }).show();
