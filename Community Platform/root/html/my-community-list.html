@@ -89,7 +89,15 @@
         .fit-container,
         .content-container {
             min-height: 50vh;
-            width: 50vw;
+            width: 60vw;
+        }
+
+
+        .community-logo {
+            float: left;
+            height: 100%;
+            width: 11%;
+            box-shadow: 0 0 0.8823em 0 rgba(0, 0, 0, .5) !important;
         }
     </style>
 
@@ -105,7 +113,7 @@
     <div id="body-container" style="height: fit-content; min-height: 100vh; display: flex; align-items: center;">
         <div style="display:flex;height:100%;width:100%;align-items:center;justify-content:center">
             <div id="community-list-container" class="fit-container">
-                <div id="header">My Community</div>
+                <div id="header"><i class="material-icons">people</i> My Community</div>
 
                 <div id="community-list">
 
@@ -136,6 +144,7 @@
 <script src="../js/main-style.js" defer></script>
 <link href="../css/page-style.css" rel="stylesheet">
 <script>
+    var storageRef = firebase.storage().ref("Community-Resources");
     firebase.auth().onAuthStateChanged(function (user) {
         window.user = user;
 
@@ -157,7 +166,7 @@
                     "data-id": key
                 });
                 let name = $('<div class="community-name">').text(communityObject.name);
-                let manageButton = $('<button class="manage-community"><i class="material-icons">settings</i>Manage</button>').prepend(
+                let manageButton = $('<button class="manage-community">Manage</button>').prepend(
                     '<i class="material-icons">edit</i>');
                 manageButton.on("click", {
                     communityID: key
@@ -166,6 +175,17 @@
 
                     window.location.href = "manage-community.html?communityID=" + communityID;
                 });
+
+                let logo = $('<img class="community-logo">');
+                var logoFileName = communityObject.logoFileName;
+                if (logoFileName != null) {
+                    let logoRef = storageRef.child(key).child("images").child("logo").child(logoFileName);
+                    logoRef.getDownloadURL().then(function (url) {
+                        logo.attr({
+                            src: url
+                        });
+                    });
+                }
                 // let address = $('<div class="community-address">').text(communityObject.address);
                 // let phone = $('<div class="community-phone">').text(communityObject.phone);
                 let description = $('<div class="community-description">').append($('<pre>').text(communityObject.description));

@@ -1,0 +1,60 @@
+[debug] [2018-04-29T13:24:05.469Z] ----------------------------------------------------------------------
+[debug] [2018-04-29T13:24:05.472Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\maste\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase deploy
+[debug] [2018-04-29T13:24:05.472Z] CLI Version:   3.18.4
+[debug] [2018-04-29T13:24:05.472Z] Platform:      win32
+[debug] [2018-04-29T13:24:05.472Z] Node Version:  v8.9.4
+[debug] [2018-04-29T13:24:05.473Z] Time:          Sun Apr 29 2018 21:24:05 GMT+0800 (中國標準時間)
+[debug] [2018-04-29T13:24:05.473Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-04-29T13:24:05.602Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-04-29T13:24:05.604Z] > authorizing via signed-in user
+[debug] [2018-04-29T13:24:05.606Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2018-04-29T13:24:05.607Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ { refresh_token: '1/jXNKfznhe0R-yB0tDanTkCbGL6zuZskdi765GDEvtY0',
+  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
+  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
+  grant_type: 'refresh_token',
+  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
+ Sun Apr 29 2018 21:24:05 GMT+0800 (中國標準時間)
+[debug] [2018-04-29T13:24:06.076Z] <<< HTTP RESPONSE 200
+[debug] [2018-04-29T13:24:06.197Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/passber-community-platform  
+  
+ Sun Apr 29 2018 21:24:06 GMT+0800 (中國標準時間)
+[debug] [2018-04-29T13:24:07.075Z] <<< HTTP RESPONSE 200
+[debug] [2018-04-29T13:24:07.076Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/passber-community-platform/tokens  
+  
+ Sun Apr 29 2018 21:24:07 GMT+0800 (中國標準時間)
+[debug] [2018-04-29T13:24:07.735Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Deploying to 'passber-community-platform'...
+[info] 
+[info] i  deploying database, storage, hosting
+[info] i  database: checking rules syntax...
+[debug] [2018-04-29T13:24:08.852Z] >>> HTTP REQUEST PUT https://passber-community-platform.firebaseio.com/.settings/rules.json?dryRun=true  
+ {
+  "rules": {
+    ".read": true,
+    ".write": "auth != null"
+  }
+}
+ 
+ Sun Apr 29 2018 21:24:08 GMT+0800 (中國標準時間)
+[debug] [2018-04-29T13:24:09.652Z] <<< HTTP RESPONSE 200
+[info] +  database: rules syntax for database passber-community-platform is valid
+[debug] [2018-04-29T13:24:09.655Z] >>> HTTP REQUEST GET https://appengine.googleapis.com/v1/apps/passber-community-platform  
+  
+ Sun Apr 29 2018 21:24:09 GMT+0800 (中國標準時間)
+[debug] [2018-04-29T13:24:10.943Z] <<< HTTP RESPONSE 200
+[info] i  storage: checking storage.rules for compilation errors...
+[debug] [2018-04-29T13:24:10.950Z] >>> HTTP REQUEST POST https://firebaserules.googleapis.com/v1/projects/passber-community-platform:test  
+ { source: { files: [ [Object] ] } } 
+ Sun Apr 29 2018 21:24:10 GMT+0800 (中國標準時間)
+[debug] [2018-04-29T13:24:12.151Z] <<< HTTP RESPONSE 200
+[info] +  storage: rules file storage.rules compiled successfully
+[info] i  storage: uploading rules storage.rules...
+[debug] [2018-04-29T13:24:12.349Z] >>> HTTP REQUEST POST https://firebaserules.googleapis.com/v1/projects/passber-community-platform/rulesets  
+ { source: { files: [ [Object] ] } } 
+ Sun Apr 29 2018 21:24:12 GMT+0800 (中國標準時間)
+[debug] [2018-04-29T13:24:13.591Z] <<< HTTP RESPONSE 200
+[debug] [2018-04-29T13:24:13.591Z] [rules] created ruleset projects/passber-community-platform/rulesets/eed463d2-0a0f-4140-adef-3e6099790e33
+[info] i  hosting: preparing root directory for upload...
