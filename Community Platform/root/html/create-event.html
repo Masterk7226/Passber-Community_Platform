@@ -59,6 +59,11 @@
         width: 100%;
         margin-bottom: 10px;
     }
+
+    .map {
+        height: 40vh;
+        width: 100%;
+    }
 </style>
 
 <script src="../js/login.js"></script>
@@ -115,6 +120,14 @@
                             </tr>
                             <tr>
                                 <td>
+                                    <label>Fee(HKD$):</label>
+                                </td>
+                                <td>
+                                    <input type="number" class="event-fee">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
                                     <label>Address</label>
                                 </td>
                                 <td>
@@ -134,7 +147,7 @@
                             </tr>
                             <tr>
                                 <td colspan="2">
-                                    <div id="map" class="map" style="height:150px; width: 150px;"></div>
+                                    <div id="map" class="map"></div>
                                 </td>
                             </tr>
                             <tr>
@@ -195,6 +208,7 @@
         var name = $(".event-name").val();
         var startTime = $(".event-start-time").val();
         var endTime = $(".event-end-time").val();
+        var fee = $(".event-fee").val();
         var description = $(".event-description").val();
         var address = $(".event-address").val();
         var longtitude = $(".event-longtitude").val();
@@ -203,8 +217,7 @@
             name: name,
             startTime: startTime,
             endTime: endTime,
-            start: startTime,
-            end: endTime,
+            fee: fee,
             description: description,
             address: address,
             lontitue: longtitude,

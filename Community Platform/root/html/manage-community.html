@@ -167,6 +167,16 @@
                 </fieldset>
 
                 <fieldset>
+                    <legend>Useful Information:</legend>
+                    <div class="community-number-of-member">Number of members:
+                        <span>0</span>
+                    </div>
+                    <div class="community-number-of-event">Number of event:
+                        <span>0</span>
+                    </div>
+                </fieldset>
+
+                <fieldset>
                     <legend>Member Type:</legend>
                     <div id="member-type-list">
 
@@ -211,6 +221,7 @@
     var storageRef = firebase.storage().ref("Community-Resources");
     var communityRef = firebase.database().ref("Community/" + communityID);
     var ref = communityRef.child("/MemberType");
+    var recordRef = communityRef.child("/MemberRecord");
     var eventRef = communityRef.child("/EventSet");
     var formRef = communityRef.child("/FormSet");
     var loadMemberTypeList = function () {
@@ -237,6 +248,20 @@
             $(".community-description pre").text(community.description);
         });
         communityRef.on("child_changed", function (data) {
+
+        });
+
+        function updateUsefulInformation(data) {
+            var memberRecords = data.val();
+            var numberOfMembers = Object.keys(memberRecords).length;
+
+            $(".community-number-of-member span").text(numberOfMembers);
+        }
+
+        recordRef.on("value", function (data) {
+            updateUsefulInformation(data)
+        });
+        recordRef.on("child_changed", function () {
 
         });
 
@@ -330,6 +355,8 @@
                 return;
             }
 
+            var numberOfEvents = Object.keys(eventSet).length;
+            $(".community-number-of-event span").text(numberOfEvents);
             var eventList = $("#event-list");
             for (var key = [] in eventSet) {
                 var eventObject = eventSet[key];

@@ -11,9 +11,9 @@
     <!-- Google Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 
     <!-- Bootstrap & jQuery -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -37,7 +37,6 @@
 
     <style>
         #community-list-container {
-            min-width: fit-content;
             background-color: rgb(218, 218, 218);
         }
 
@@ -87,7 +86,7 @@
         .community-description {
             display: block;
             font-size: 1.25vmax;
-            width: 50vw;
+            width: 45vw;
         }
 
         .manage-community,
@@ -112,6 +111,10 @@
             min-height: 50vh;
             width: 60vw;
         }
+
+        #joined-community {
+            display: none;
+        }
     </style>
 
 </head>
@@ -125,10 +128,24 @@
     <div id="body-container" style="height: fit-content; min-height: 100vh; display: flex; align-items: center;">
 
         <div style="display:flex;height:100%;width:100%;align-items:center;justify-content:center">
-            <div id="community-list-container" class="fit-container">
-                <div id="header"><i class="material-icons">view_list</i> Recommanded Community</div>
+            <div id="community-list-container" class="fit-container" data-role="tabs">
+                <ul>
+                    <li aria-selected="true">
+                        <a href="#community-list" data-href="community-list">
+                            <i class="material-icons">view_list</i> Recommanded Community
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#joined-community" data-href="joined-community">
+                            <i class="material-icons">account_balance</i>Joined Community
+                        </a>
+                    </li>
+                </ul>
 
                 <div id="community-list">
+
+                </div>
+                <div id="joined-community">
 
                 </div>
             </div>
@@ -156,6 +173,9 @@
 <link href="../css/page-style.css" rel="stylesheet">
 
 <script>
+    $("#community-list-container").tabs({
+        active: 0
+    });
     var storageRef = firebase.storage().ref("Community-Resources");
     var loadCommunitiesFromDatabase = function () {
         let ref = firebase.database().ref("Community").orderByChild("isActivated").equalTo(true);
@@ -208,7 +228,79 @@
 
         });
     }
+    var loadJoinnedCommunitiesFromDatabase = function () {
+        let ref = firebase.database().ref("Community").orderByChild("isActivated").equalTo(true);
+        const allowedFileTypes = ["jpg", "png", "gif"];
+
+        function createJoinnedCommunityItem(data) {
+            let joinnedCommunityList = $("#joined-community");
+            let communityObjectSet = data.val();
+
+            joinnedCommunityList.empty();
+            for (var key = [] in communityObjectSet) {
+                let communityObject = communityObjectSet[key];
+                try {
+                    let isMember = communityObject["MemberRecord"][user.uid] != undefined;
+
+                    if (!isMember) {
+                        continue;
+                    }
+
+                    let community = $('<div class="community-container">').attr({
+                        "data-id": key
+                    });
+                    community.on("click.view-community-info", {
+                        communityID: key
+                    }, function (event) {
+                        var communityID = event.data.communityID;
+
+                        window.location.replace("community-info.html?communityID=" + communityID);
+                    });
+
+                    let logo = $('<img class="community-logo">');
+                    var logoFileName = communityObject.logoFileName;
+                    if (logoFileName != null) {
+                        let logoRef = storageRef.child(key).child("images").child("logo").child(logoFileName);
+                        logoRef.getDownloadURL().then(function (url) {
+                            logo.attr({
+                                src: url
+                            });
+                        });
+                    }
+                    let info = $('<div class="community-info">');
+                    let name = $('<div class="community-name">').text(communityObject.name);
+                    let description = $('<div class="community-description">').append($('<pre>').text(
+                        communityObject.description));
+
+                    info.append(name).append(description);
+                    community.append(logo).append(info);
+
+                    joinnedCommunityList.append(community);
+                } catch (error) {
+
+                }
+            }
+            $("#community-list-container").tabs("refresh");
+        }
+
+        ref.on("value", function (data) {
+            disableLoading();
+            console.log(data.val());
+            createJoinnedCommunityItem(data);
+        });
+        ref.on("child_changed", function () {
+
+        });
+    }
     loadCommunitiesFromDatabase();
+    firebase.auth().onAuthStateChanged(function (user) {
+        window.user = user;
+
+        if (user != null) {
+            loadJoinnedCommunitiesFromDatabase();
+            $("#community-list-container").tabs("refresh");
+        }
+    });
 </script>
 
 </html>

@@ -84,7 +84,6 @@
         }
 
         .event-name {
-            display: inline-flex;
             margin-top: 5px;
         }
 
@@ -129,6 +128,12 @@
             min-height: 40vh;
             width: 40vw;
         }
+
+        .event-address pre {
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
     </style>
 </head>
 
@@ -144,17 +149,47 @@
             <div id="event-info-container" class="fit-container">
                 <fieldset>
                     <legend>Event Info:</legend>
-                    <div class="event-name">Name:
-                        <span></span>
-                    </div>
-                    <div class="event-address">Start Time:
-                        <span></span>
-                    </div>
-                    <div class="event-phone">End Time:
-                        <span></span>
-                    </div>
-                    <div class="event-description">Description:
-                        <pre></pre>
+                    <table>
+                        <tr class="event-name">
+                            <td>Name:</td>
+                            <td>
+                                <span></span>
+                            </td>
+                        </tr>
+                        <tr class="event-start-time">
+                            <td>Start Time:</td>
+                            <td>
+                                <span></span>
+                            </td>
+                        </tr>
+                        <tr class="event-end-time">
+                            <td>End Time:</td>
+                            <td>
+                                <span></span>
+                            </td>
+                        </tr>
+                        <tr class="event-fee">
+                            <td>Fee(HKD): $</td>
+                            <td>
+                                <span></span>
+                            </td>
+                        </tr>
+                        <tr class="event-address">
+                            <td>Address:</td>
+                            <td>
+                                <pre></pre>
+                            </td>
+                        </tr>
+                        <tr class="event-description">
+                            <td>Description:</td>
+                        </tr>
+                    </table>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Useful Information:</legend>
+                    <div class="event-number-of-participants">Number of Participants:
+                        <span>0</span>
                     </div>
                 </fieldset>
 
@@ -195,6 +230,7 @@
     var communityRef = firebase.database().ref("Community/" + communityID);
     var ref = communityRef.child("/MemberType");
     var eventRef = communityRef.child("/EventSet/" + eventID);
+    var recordRef = eventRef.child("/EventRecord");
     var formRef = communityRef.child("/Event/FormSet");
     var loadMemberTypeList = function () {
         eventRef.on("value", function (data) {
@@ -202,13 +238,30 @@
             var event = data.val()
 
             $(".event-name span").text(event.name);
-            $(".event-address span").text(event.startTime);
-            $(".event-phone span").text(event.endTime);
+            $(".event-start-time span").text(event.startTime);
+            $(".event-end-time span").text(event.endTime);
+            $(".event-fee span").text(event.fee);
+            $(".event-address pre").text(event.address);
             $(".event-description pre").text(event.description);
         });
         eventRef.on("child_changed", function (data) {
 
         });
+
+        function updateUsefulInformation(data) {
+            var memberRecords = data.val();
+            var numberOfMembers = Object.keys(memberRecords).length;
+
+            $(".event-number-of-participants span").text(numberOfMembers);
+        }
+
+        recordRef.on("value", function (data) {
+            updateUsefulInformation(data)
+        });
+        recordRef.on("child_changed", function () {
+
+        });
+
 
         function updateMemberTypeList(data) {
             var memberTypeObjectSet = data.val();

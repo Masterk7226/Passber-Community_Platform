@@ -166,6 +166,12 @@
             min-height: 40vh;
             width: 40vw;
         }
+
+        .event-address pre {
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
     </style>
 </head>
 
@@ -198,6 +204,18 @@
                             <td>End Time:</td>
                             <td>
                                 <span></span>
+                            </td>
+                        </tr>
+                        <tr class="event-fee">
+                            <td>Fee(HKD): $</td>
+                            <td>
+                                <span></span>
+                            </td>
+                        </tr>
+                        <tr class="event-address">
+                            <td>Address:</td>
+                            <td>
+                                <pre></pre>
                             </td>
                         </tr>
                         <tr class="event-description">
@@ -249,6 +267,8 @@
             $(".event-name span").text(event.name);
             $(".event-start-time span").text(event.startTime);
             $(".event-end-time span").text(event.endTime);
+            $(".event-fee span").text(event.fee);
+            $(".event-address pre").text(event.address);
             $(".event-description pre").text(event.description);
         });
         eventRef.on("child_changed", function (data) {
